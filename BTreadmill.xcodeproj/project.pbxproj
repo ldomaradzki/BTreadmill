@@ -1,0 +1,527 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7207F4512A55EA4700772D1B /* Int+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7207F4502A55EA4700772D1B /* Int+Extensions.swift */; };
+		7207F4532A55EAF400772D1B /* Double+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7207F4522A55EAF400772D1B /* Double+Extensions.swift */; };
+		721838752A50332600CC6D97 /* StravaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838742A50332600CC6D97 /* StravaService.swift */; };
+		721838772A50351400CC6D97 /* BluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838762A50351400CC6D97 /* BluetoothService.swift */; };
+		7218387D2A50B66800CC6D97 /* TreadmillService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7218387C2A50B66800CC6D97 /* TreadmillService.swift */; };
+		721838802A50BBD800CC6D97 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7218387F2A50BBD800CC6D97 /* ContentViewModel.swift */; };
+		721838822A50BF5300CC6D97 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 721838812A50BF5300CC6D97 /* Info.plist */; };
+		721838A82A52F80400CC6D97 /* RunCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838A72A52F80400CC6D97 /* RunCellView.swift */; };
+		721838AB2A531AD000CC6D97 /* Run+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838AA2A531AD000CC6D97 /* Run+Extensions.swift */; };
+		721838AD2A533DA300CC6D97 /* DateFormatter+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838AC2A533DA300CC6D97 /* DateFormatter+Extensions.swift */; };
+		721838AF2A5345A700CC6D97 /* RunContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838AE2A5345A700CC6D97 /* RunContentView.swift */; };
+		721838B12A535C8C00CC6D97 /* RunListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838B02A535C8C00CC6D97 /* RunListView.swift */; };
+		721838B62A54AD1C00CC6D97 /* GroupedRuns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838B52A54AD1C00CC6D97 /* GroupedRuns.swift */; };
+		726E40812A554A9100D46E30 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40802A554A9100D46E30 /* Data+Extensions.swift */; };
+		726E40832A55845E00D46E30 /* RunningState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40822A55845E00D46E30 /* RunningState.swift */; };
+		726E40852A55846C00D46E30 /* TreadmillCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40842A55846C00D46E30 /* TreadmillCommand.swift */; };
+		726E40872A55847900D46E30 /* TreadmillState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40862A55847900D46E30 /* TreadmillState.swift */; };
+		726E408A2A55CD1100D46E30 /* RunningControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40892A55CD1100D46E30 /* RunningControlView.swift */; };
+		726E408C2A55CD8500D46E30 /* IdlingControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E408B2A55CD8500D46E30 /* IdlingControlView.swift */; };
+		72BCB65D2A4E09C5003FFA9D /* BTreadmillApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72BCB65C2A4E09C5003FFA9D /* BTreadmillApp.swift */; };
+		72BCB65F2A4E09C5003FFA9D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72BCB65E2A4E09C5003FFA9D /* ContentView.swift */; };
+		72BCB6612A4E09C6003FFA9D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72BCB6602A4E09C6003FFA9D /* Assets.xcassets */; };
+		72BCB6642A4E09C6003FFA9D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72BCB6632A4E09C6003FFA9D /* Preview Assets.xcassets */; };
+		72BCB6662A4E09C6003FFA9D /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72BCB6652A4E09C6003FFA9D /* Persistence.swift */; };
+		72BCB6692A4E09C6003FFA9D /* BTreadmill.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 72BCB6672A4E09C6003FFA9D /* BTreadmill.xcdatamodeld */; };
+		72BCB6782A4E11AF003FFA9D /* OAuth2 in Frameworks */ = {isa = PBXBuildFile; productRef = 72BCB6772A4E11AF003FFA9D /* OAuth2 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		7207F4502A55EA4700772D1B /* Int+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Extensions.swift"; sourceTree = "<group>"; };
+		7207F4522A55EAF400772D1B /* Double+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Double+Extensions.swift"; sourceTree = "<group>"; };
+		721838742A50332600CC6D97 /* StravaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaService.swift; sourceTree = "<group>"; };
+		721838762A50351400CC6D97 /* BluetoothService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothService.swift; sourceTree = "<group>"; };
+		7218387C2A50B66800CC6D97 /* TreadmillService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreadmillService.swift; sourceTree = "<group>"; };
+		7218387F2A50BBD800CC6D97 /* ContentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewModel.swift; sourceTree = "<group>"; };
+		721838812A50BF5300CC6D97 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		721838A72A52F80400CC6D97 /* RunCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunCellView.swift; sourceTree = "<group>"; };
+		721838AA2A531AD000CC6D97 /* Run+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Run+Extensions.swift"; sourceTree = "<group>"; };
+		721838AC2A533DA300CC6D97 /* DateFormatter+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DateFormatter+Extensions.swift"; sourceTree = "<group>"; };
+		721838AE2A5345A700CC6D97 /* RunContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunContentView.swift; sourceTree = "<group>"; };
+		721838B02A535C8C00CC6D97 /* RunListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunListView.swift; sourceTree = "<group>"; };
+		721838B52A54AD1C00CC6D97 /* GroupedRuns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedRuns.swift; sourceTree = "<group>"; };
+		726E40802A554A9100D46E30 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
+		726E40822A55845E00D46E30 /* RunningState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningState.swift; sourceTree = "<group>"; };
+		726E40842A55846C00D46E30 /* TreadmillCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreadmillCommand.swift; sourceTree = "<group>"; };
+		726E40862A55847900D46E30 /* TreadmillState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreadmillState.swift; sourceTree = "<group>"; };
+		726E40892A55CD1100D46E30 /* RunningControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningControlView.swift; sourceTree = "<group>"; };
+		726E408B2A55CD8500D46E30 /* IdlingControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdlingControlView.swift; sourceTree = "<group>"; };
+		72BCB6592A4E09C5003FFA9D /* BTreadmill.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BTreadmill.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		72BCB65C2A4E09C5003FFA9D /* BTreadmillApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTreadmillApp.swift; sourceTree = "<group>"; };
+		72BCB65E2A4E09C5003FFA9D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		72BCB6602A4E09C6003FFA9D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		72BCB6632A4E09C6003FFA9D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		72BCB6652A4E09C6003FFA9D /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		72BCB6682A4E09C6003FFA9D /* BTreadmill.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BTreadmill.xcdatamodel; sourceTree = "<group>"; };
+		72BCB66A2A4E09C6003FFA9D /* BTreadmill.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BTreadmill.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		72BCB6562A4E09C5003FFA9D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				72BCB6782A4E11AF003FFA9D /* OAuth2 in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		721838732A50331700CC6D97 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				721838762A50351400CC6D97 /* BluetoothService.swift */,
+				721838742A50332600CC6D97 /* StravaService.swift */,
+				7218387C2A50B66800CC6D97 /* TreadmillService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		721838782A50AF4D00CC6D97 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				726E40882A55CD0300D46E30 /* Controls */,
+				72BCB65E2A4E09C5003FFA9D /* ContentView.swift */,
+				721838B22A535D4B00CC6D97 /* List */,
+				721838B32A535D5300CC6D97 /* Details */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7218387E2A50BBCB00CC6D97 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				7218387F2A50BBD800CC6D97 /* ContentViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		721838A92A531AC700CC6D97 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				721838AA2A531AD000CC6D97 /* Run+Extensions.swift */,
+				721838AC2A533DA300CC6D97 /* DateFormatter+Extensions.swift */,
+				726E40802A554A9100D46E30 /* Data+Extensions.swift */,
+				7207F4502A55EA4700772D1B /* Int+Extensions.swift */,
+				7207F4522A55EAF400772D1B /* Double+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		721838B22A535D4B00CC6D97 /* List */ = {
+			isa = PBXGroup;
+			children = (
+				721838B02A535C8C00CC6D97 /* RunListView.swift */,
+				721838A72A52F80400CC6D97 /* RunCellView.swift */,
+			);
+			path = List;
+			sourceTree = "<group>";
+		};
+		721838B32A535D5300CC6D97 /* Details */ = {
+			isa = PBXGroup;
+			children = (
+				721838AE2A5345A700CC6D97 /* RunContentView.swift */,
+			);
+			path = Details;
+			sourceTree = "<group>";
+		};
+		721838B42A54AD1000CC6D97 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				721838B52A54AD1C00CC6D97 /* GroupedRuns.swift */,
+				726E40822A55845E00D46E30 /* RunningState.swift */,
+				726E40842A55846C00D46E30 /* TreadmillCommand.swift */,
+				726E40862A55847900D46E30 /* TreadmillState.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		726E40882A55CD0300D46E30 /* Controls */ = {
+			isa = PBXGroup;
+			children = (
+				726E40892A55CD1100D46E30 /* RunningControlView.swift */,
+				726E408B2A55CD8500D46E30 /* IdlingControlView.swift */,
+			);
+			path = Controls;
+			sourceTree = "<group>";
+		};
+		72BCB6502A4E09C5003FFA9D = {
+			isa = PBXGroup;
+			children = (
+				72BCB65B2A4E09C5003FFA9D /* BTreadmill */,
+				72BCB65A2A4E09C5003FFA9D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		72BCB65A2A4E09C5003FFA9D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				72BCB6592A4E09C5003FFA9D /* BTreadmill.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		72BCB65B2A4E09C5003FFA9D /* BTreadmill */ = {
+			isa = PBXGroup;
+			children = (
+				721838B42A54AD1000CC6D97 /* Models */,
+				721838A92A531AC700CC6D97 /* Extensions */,
+				7218387E2A50BBCB00CC6D97 /* ViewModels */,
+				721838732A50331700CC6D97 /* Services */,
+				721838782A50AF4D00CC6D97 /* Views */,
+				72BCB65C2A4E09C5003FFA9D /* BTreadmillApp.swift */,
+				72BCB6602A4E09C6003FFA9D /* Assets.xcassets */,
+				72BCB6652A4E09C6003FFA9D /* Persistence.swift */,
+				72BCB66A2A4E09C6003FFA9D /* BTreadmill.entitlements */,
+				72BCB6672A4E09C6003FFA9D /* BTreadmill.xcdatamodeld */,
+				72BCB6622A4E09C6003FFA9D /* Preview Content */,
+				721838812A50BF5300CC6D97 /* Info.plist */,
+			);
+			path = BTreadmill;
+			sourceTree = "<group>";
+		};
+		72BCB6622A4E09C6003FFA9D /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				72BCB6632A4E09C6003FFA9D /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		72BCB6582A4E09C5003FFA9D /* BTreadmill */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 72BCB66D2A4E09C6003FFA9D /* Build configuration list for PBXNativeTarget "BTreadmill" */;
+			buildPhases = (
+				72BCB6552A4E09C5003FFA9D /* Sources */,
+				72BCB6562A4E09C5003FFA9D /* Frameworks */,
+				72BCB6572A4E09C5003FFA9D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BTreadmill;
+			packageProductDependencies = (
+				72BCB6772A4E11AF003FFA9D /* OAuth2 */,
+			);
+			productName = BTreadmill;
+			productReference = 72BCB6592A4E09C5003FFA9D /* BTreadmill.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		72BCB6512A4E09C5003FFA9D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1430;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					72BCB6582A4E09C5003FFA9D = {
+						CreatedOnToolsVersion = 14.3.1;
+					};
+				};
+			};
+			buildConfigurationList = 72BCB6542A4E09C5003FFA9D /* Build configuration list for PBXProject "BTreadmill" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 72BCB6502A4E09C5003FFA9D;
+			packageReferences = (
+				72BCB6762A4E11AF003FFA9D /* XCRemoteSwiftPackageReference "OAuth2" */,
+			);
+			productRefGroup = 72BCB65A2A4E09C5003FFA9D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				72BCB6582A4E09C5003FFA9D /* BTreadmill */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		72BCB6572A4E09C5003FFA9D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				72BCB6642A4E09C6003FFA9D /* Preview Assets.xcassets in Resources */,
+				72BCB6612A4E09C6003FFA9D /* Assets.xcassets in Resources */,
+				721838822A50BF5300CC6D97 /* Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		72BCB6552A4E09C5003FFA9D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				721838802A50BBD800CC6D97 /* ContentViewModel.swift in Sources */,
+				72BCB6662A4E09C6003FFA9D /* Persistence.swift in Sources */,
+				721838B12A535C8C00CC6D97 /* RunListView.swift in Sources */,
+				72BCB65F2A4E09C5003FFA9D /* ContentView.swift in Sources */,
+				721838752A50332600CC6D97 /* StravaService.swift in Sources */,
+				726E408C2A55CD8500D46E30 /* IdlingControlView.swift in Sources */,
+				726E40852A55846C00D46E30 /* TreadmillCommand.swift in Sources */,
+				72BCB65D2A4E09C5003FFA9D /* BTreadmillApp.swift in Sources */,
+				721838AB2A531AD000CC6D97 /* Run+Extensions.swift in Sources */,
+				7207F4512A55EA4700772D1B /* Int+Extensions.swift in Sources */,
+				7218387D2A50B66800CC6D97 /* TreadmillService.swift in Sources */,
+				721838B62A54AD1C00CC6D97 /* GroupedRuns.swift in Sources */,
+				726E40812A554A9100D46E30 /* Data+Extensions.swift in Sources */,
+				721838A82A52F80400CC6D97 /* RunCellView.swift in Sources */,
+				721838772A50351400CC6D97 /* BluetoothService.swift in Sources */,
+				721838AD2A533DA300CC6D97 /* DateFormatter+Extensions.swift in Sources */,
+				726E40872A55847900D46E30 /* TreadmillState.swift in Sources */,
+				726E408A2A55CD1100D46E30 /* RunningControlView.swift in Sources */,
+				721838AF2A5345A700CC6D97 /* RunContentView.swift in Sources */,
+				72BCB6692A4E09C6003FFA9D /* BTreadmill.xcdatamodeld in Sources */,
+				7207F4532A55EAF400772D1B /* Double+Extensions.swift in Sources */,
+				726E40832A55845E00D46E30 /* RunningState.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		72BCB66B2A4E09C6003FFA9D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		72BCB66C2A4E09C6003FFA9D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		72BCB66E2A4E09C6003FFA9D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = BTreadmill/BTreadmill.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"BTreadmill/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BTreadmill/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.BTreadmill;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		72BCB66F2A4E09C6003FFA9D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = BTreadmill/BTreadmill.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"BTreadmill/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BTreadmill/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.BTreadmill;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		72BCB6542A4E09C5003FFA9D /* Build configuration list for PBXProject "BTreadmill" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72BCB66B2A4E09C6003FFA9D /* Debug */,
+				72BCB66C2A4E09C6003FFA9D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		72BCB66D2A4E09C6003FFA9D /* Build configuration list for PBXNativeTarget "BTreadmill" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72BCB66E2A4E09C6003FFA9D /* Debug */,
+				72BCB66F2A4E09C6003FFA9D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		72BCB6762A4E11AF003FFA9D /* XCRemoteSwiftPackageReference "OAuth2" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/p2/OAuth2.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		72BCB6772A4E11AF003FFA9D /* OAuth2 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 72BCB6762A4E11AF003FFA9D /* XCRemoteSwiftPackageReference "OAuth2" */;
+			productName = OAuth2;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		72BCB6672A4E09C6003FFA9D /* BTreadmill.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				72BCB6682A4E09C6003FFA9D /* BTreadmill.xcdatamodel */,
+			);
+			currentVersion = 72BCB6682A4E09C6003FFA9D /* BTreadmill.xcdatamodel */;
+			path = BTreadmill.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 72BCB6512A4E09C5003FFA9D /* Project object */;
+}
