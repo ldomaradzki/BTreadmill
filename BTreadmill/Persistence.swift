@@ -39,9 +39,10 @@ struct PersistenceController {
         })
         container.viewContext.automaticallyMergesChangesFromParent = true
         
-        // UNCOMMENT TO REMOVE ALL DATA
-//        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Run")
-//        let dr = NSBatchDeleteRequest(fetchRequest: fr)
-//        try! container.persistentStoreCoordinator.execute(dr, with: container.viewContext)
+        // Cleanup for broken runs that sometimes happen. Dunno why.
+        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Run")
+        fr.predicate = NSPredicate(format: "completed == NULL")
+        let dr = NSBatchDeleteRequest(fetchRequest: fr)
+        try! container.persistentStoreCoordinator.execute(dr, with: container.viewContext)
     }
 }

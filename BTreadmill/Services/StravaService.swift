@@ -52,17 +52,17 @@ class StravaService {
         let id: Int
     }
     
-    func sendPost(startDate: Date, elapsedTime: Measurement<UnitDuration>, distance: Measurement<UnitLength>) async -> Int? {
+    func sendPost(startDate: Date, elapsedTimeSeconds: Int, distanceMeters: Double) async -> Int? {
         await withCheckedContinuation { continuation in
             var components = activitiesComponents
             components.queryItems = [
-                URLQueryItem(name: "name", value: "Treadmill Run"),
+                URLQueryItem(name: "name", value: "Treadmill Walk"),
                 URLQueryItem(name: "sport_type", value: "VirtualRun"),
                 URLQueryItem(name: "start_date_local", value: dateFormatter.string(from: startDate)),
-                URLQueryItem(name: "elapsed_time", value: "\(Int(elapsedTime.converted(to: .seconds).value))"),
+                URLQueryItem(name: "elapsed_time", value: "\(elapsedTimeSeconds)"),
                 URLQueryItem(name: "trainer", value: "1"),
-                URLQueryItem(name: "distance", value: "\(distance.converted(to: .meters).value)"),
-                URLQueryItem(name: "description", value: "Uploaded from BTreadmill app")
+                URLQueryItem(name: "distance", value: "\(distanceMeters)"),
+                URLQueryItem(name: "description", value: "Uploaded from BTreadmill app. Setup: treadmill and standing desk.")
             ]
 
             var req = oauth2.request(forURL: components.url!)

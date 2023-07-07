@@ -10,20 +10,13 @@ import Combine
 import SwiftUI
 
 class ContentViewModel: ObservableObject {
-    class RunSession {
-        let startDate = Date()
-        var endDate: Date? = nil
-        var lastRunningState: RunningState? { allRunningStates.last }
-        var allRunningStates: [RunningState] = []
-    }
-    
     private var bag = Set<AnyCancellable>()
     private let persistence = PersistenceController.shared
     private let stravaService = StravaService()
     private let treadmillService = TreadmillService()
     
     private var runSession: RunSession?
-    
+
     @Published var bluetoothState: Bool = false
     @Published var showAlert = false
     @Published var runningSpeed: Measurement<UnitSpeed>?
@@ -45,7 +38,13 @@ class ContentViewModel: ObservableObject {
                 switch state {
                 case .starting:
                     if runSession == nil {
-                        runSession = RunSession()
+                        let viewContext = persistence.container.viewContext
+                        let newRun = Run(context: viewContext)
+                        newRun.startTimestamp = Date()
+                        newRun.endTimestamp = Date()
+                        newRun.completed = false
+                        
+                        runSession = RunSession(run: newRun)
                     }
                 case .running(let runningState):
                     runSession?.allRunningStates.append(runningState)
@@ -74,11 +73,12 @@ class ContentViewModel: ObservableObject {
         treadmillService.sendCommand(command)
     }
     
+    @MainActor
     func shareOnStrava(run: Run) async -> Int? {
         await stravaService.sendPost(
             startDate: run.startTimestamp!,
-            elapsedTime: run.duration,
-            distance: run.distance)
+            elapsedTimeSeconds: Int(run.duration.converted(to: .seconds).value),
+            distanceMeters: run.distance.converted(to: .meters).value)
     }
     
     func updateUploadedId(run: Run, id: Int) {
@@ -106,18 +106,10 @@ class ContentViewModel: ObservableObject {
     }
     
     private func save(runSession: RunSession?) {
-        guard let runSession, let lastRunningState = runSession.lastRunningState else {
-            return
-        }
-        
         let viewContext = persistence.container.viewContext
         
-        let newRun = Run(context: viewContext)
-        newRun.startTimestamp = runSession.startDate
-        newRun.endTimestamp = runSession.endDate
-        newRun.distanceMeters = lastRunningState.distance.converted(to: .meters).value
-        newRun.speeds = runSession.allRunningStates.map { $0.speed.converted(to: .kilometersPerHour).value } as NSObject
-
+        runSession?.run.endTimestamp = .now
+        runSession?.run.completed = true
         do {
             try viewContext.save()
             self.runSession = nil

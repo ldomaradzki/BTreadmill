@@ -12,6 +12,7 @@ enum PreselectedSpeeds: Int, CaseIterable, Identifiable {
     var id: Self { self }
     
     case selectMe = 0
+    case oneZero = 10
     case twoZero = 20
     case twoFive = 25
     case threeZero = 30
@@ -49,6 +50,7 @@ struct RunningControlView: View {
                 }
                 Picker("", selection: $pickerSelection) {
                     Text("- select speed -").tag(PreselectedSpeeds.selectMe)
+                    Text("1.0 km/h").tag(PreselectedSpeeds.oneZero)
                     Text("2.0 km/h").tag(PreselectedSpeeds.twoZero)
                     Text("2.5 km/h").tag(PreselectedSpeeds.twoFive)
                     Text("3.0 km/h").tag(PreselectedSpeeds.threeZero)

@@ -9,13 +9,14 @@ import Foundation
 import SwiftUI
 
 struct RunCellView: View {
-    let run: Run
+    @ObservedObject
+    var run: Run
     
     var body: some View {
         HStack(spacing: 0) {
             VStack(spacing: 0) {
-                Text(run.startTimestamp!, formatter: DateFormatter.shortFormatter).bold()
-                Text(run.endTimestamp!, formatter: DateFormatter.shortFormatter).fontWeight(.thin).font(.callout)
+                Text(run.startTimestamp ?? .now, formatter: DateFormatter.shortFormatter).bold()
+                Text(run.endTimestamp ?? .now, formatter: DateFormatter.shortFormatter).fontWeight(.thin).font(.callout)
             }
             Spacer()
             Text("\(run.distanceMeters / 1000, specifier: "%.2f")").bold()
@@ -25,6 +26,10 @@ struct RunCellView: View {
             Text("h").fontWeight(.thin)
             Text("\(run.minutesReminder)").bold()
             Text("min").fontWeight(.thin)
+            if !run.completed {
+                Spacer()
+                Text("🟢")
+            }
         }.padding(10)
     }
 }

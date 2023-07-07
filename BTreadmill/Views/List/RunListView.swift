@@ -9,18 +9,12 @@ import Foundation
 import SwiftUI
 
 struct RunListView: View {
-    let runs: [Run]
     @StateObject
     var viewModel: ContentViewModel
     
-    private var groupedRuns: [GroupedRuns] {
-        Dictionary(grouping: runs, by: { Calendar.current.startOfDay(for: $0.startTimestamp!) })
-            .map { GroupedRuns(id: $0.key.timeIntervalSince1970, date: $0.key, runs: $0.value) }
-            .sorted { run1, run2 in
-                run1.date.compare(run2.date) == .orderedDescending
-            }
-    }
-    
+    @SectionedFetchRequest(sectionIdentifier: \.day, sortDescriptors: [NSSortDescriptor(keyPath: \Run.startTimestamp, ascending: false)], animation: .default)
+    var groupedRuns: SectionedFetchResults<String, Run>
+
     var body: some View {
         List {
             ForEach(groupedRuns) { groupedRun in
@@ -29,9 +23,9 @@ struct RunListView: View {
         }
     }
     
-    private func groupedSection(_ groupedRun: GroupedRuns) -> some View {
-        Section(groupedRun.title) {
-            ForEach(groupedRun.runs) { run in
+    private func groupedSection(_ groupedRun: SectionedFetchResults<String, Run>.Element) -> some View {
+        Section(groupedRun.headerTitle) {
+            ForEach(groupedRun) { run in
                 NavigationLink {
                     RunContentView(run: run)
                         .toolbar {
@@ -58,6 +52,7 @@ struct RunListView: View {
         }
     }
     
+    @MainActor
     func shareButton(run: Run) async {
         if let id = await viewModel.shareOnStrava(run: run) {
             viewModel.updateUploadedId(run: run, id: id)
@@ -73,4 +68,16 @@ struct RunListView: View {
         viewModel.remove(run: run)
     }
     
+}
+
+extension SectionedFetchResults<String, Run>.Element {
+    var headerTitle: String {
+        "\(DateFormatter.mediumDateFormatter.string(from: first!.startTimestamp!)) (total \(totalDistance()) km)"
+    }
+    
+    private func totalDistance() -> String {
+        let distance = map { $0.distanceMeters }.reduce(0, +)
+        let kmDistance = Measurement<UnitLength>(value: distance, unit: .meters).converted(to: .kilometers).value
+        return String(format: "%.2f", kmDistance)
+    }
 }

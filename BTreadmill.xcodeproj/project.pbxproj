@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7207F4512A55EA4700772D1B /* Int+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7207F4502A55EA4700772D1B /* Int+Extensions.swift */; };
 		7207F4532A55EAF400772D1B /* Double+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7207F4522A55EAF400772D1B /* Double+Extensions.swift */; };
+		7207F4552A5693FF00772D1B /* RunSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7207F4542A5693FF00772D1B /* RunSession.swift */; };
 		721838752A50332600CC6D97 /* StravaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838742A50332600CC6D97 /* StravaService.swift */; };
 		721838772A50351400CC6D97 /* BluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838762A50351400CC6D97 /* BluetoothService.swift */; };
 		7218387D2A50B66800CC6D97 /* TreadmillService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7218387C2A50B66800CC6D97 /* TreadmillService.swift */; };
@@ -38,6 +39,7 @@
 /* Begin PBXFileReference section */
 		7207F4502A55EA4700772D1B /* Int+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Extensions.swift"; sourceTree = "<group>"; };
 		7207F4522A55EAF400772D1B /* Double+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Double+Extensions.swift"; sourceTree = "<group>"; };
+		7207F4542A5693FF00772D1B /* RunSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunSession.swift; sourceTree = "<group>"; };
 		721838742A50332600CC6D97 /* StravaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaService.swift; sourceTree = "<group>"; };
 		721838762A50351400CC6D97 /* BluetoothService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothService.swift; sourceTree = "<group>"; };
 		7218387C2A50B66800CC6D97 /* TreadmillService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreadmillService.swift; sourceTree = "<group>"; };
@@ -90,8 +92,8 @@
 		721838782A50AF4D00CC6D97 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				726E40882A55CD0300D46E30 /* Controls */,
 				72BCB65E2A4E09C5003FFA9D /* ContentView.swift */,
+				726E40882A55CD0300D46E30 /* Controls */,
 				721838B22A535D4B00CC6D97 /* List */,
 				721838B32A535D5300CC6D97 /* Details */,
 			);
@@ -142,6 +144,7 @@
 				726E40822A55845E00D46E30 /* RunningState.swift */,
 				726E40842A55846C00D46E30 /* TreadmillCommand.swift */,
 				726E40862A55847900D46E30 /* TreadmillState.swift */,
+				7207F4542A5693FF00772D1B /* RunSession.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -294,6 +297,7 @@
 				726E40872A55847900D46E30 /* TreadmillState.swift in Sources */,
 				726E408A2A55CD1100D46E30 /* RunningControlView.swift in Sources */,
 				721838AF2A5345A700CC6D97 /* RunContentView.swift in Sources */,
+				7207F4552A5693FF00772D1B /* RunSession.swift in Sources */,
 				72BCB6692A4E09C6003FFA9D /* BTreadmill.xcdatamodeld in Sources */,
 				7207F4532A55EAF400772D1B /* Double+Extensions.swift in Sources */,
 				726E40832A55845E00D46E30 /* RunningState.swift in Sources */,

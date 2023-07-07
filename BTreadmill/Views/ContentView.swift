@@ -12,11 +12,6 @@ struct ContentView: View {
     @StateObject
     var viewModel: ContentViewModel
     
-    @State private var date = Date()
-
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \Run.startTimestamp, ascending: false)], animation: .default)
-    private var runs: FetchedResults<Run>
-    
     var body: some View {
         NavigationView {
             VStack(spacing: 10) {
@@ -36,7 +31,7 @@ struct ContentView: View {
                 } else {
                     Text("Connecting...")
                 }
-                RunListView(runs: runs.map { $0 }, viewModel: viewModel)
+                RunListView(viewModel: viewModel)
                     .listStyle(.bordered(alternatesRowBackgrounds: true))
             }
             .toolbar {
