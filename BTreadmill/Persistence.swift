@@ -6,8 +6,10 @@
 //
 
 import CoreData
+import OSLog
 
-struct PersistenceController {
+class PersistenceController {
+    private let logger = Logger(subsystem: "CoreData", category: "database")
     static let shared = PersistenceController()
 
     static var preview: PersistenceController = {
@@ -39,7 +41,13 @@ struct PersistenceController {
         })
         container.viewContext.automaticallyMergesChangesFromParent = true
         
-        // Cleanup for broken runs that sometimes happen. Dunno why.
+        logger.notice("CoreData database: \(self.container.persistentStoreDescriptions.first!.url!.path(percentEncoded: false))")
+        
+        cleanBrokenRuns()
+    }
+    
+    // Cleanup for broken runs that sometimes happen. Dunno why.
+    private func cleanBrokenRuns() {
         let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Run")
         fr.predicate = NSPredicate(format: "completed == NULL")
         let dr = NSBatchDeleteRequest(fetchRequest: fr)
