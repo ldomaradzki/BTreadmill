@@ -17,8 +17,9 @@ class RunData: Codable, Identifiable, FetchableRecord, PersistableRecord {
     var speeds: String
     var completed: Bool
     var uploadedId: String?
+    var paused: Bool
     
-    init(id: Int64? = nil, startTimestamp: Date, endTimestamp: Date? = .now, distanceMeters: Double = 0, distanceMetersOffset: Double = 0, speeds: String = "", completed: Bool = false, uploadedId: String? = nil) {
+    init(id: Int64? = nil, startTimestamp: Date, endTimestamp: Date? = .now, distanceMeters: Double = 0, distanceMetersOffset: Double = 0, speeds: String = "", completed: Bool = false, uploadedId: String? = nil, paused: Bool = false) {
         self.id = id
         self.startTimestamp = startTimestamp
         self.endTimestamp = endTimestamp
@@ -27,6 +28,7 @@ class RunData: Codable, Identifiable, FetchableRecord, PersistableRecord {
         self.speeds = speeds
         self.completed = completed
         self.uploadedId = uploadedId
+        self.paused = paused
     }
 
     
@@ -36,12 +38,30 @@ class RunData: Codable, Identifiable, FetchableRecord, PersistableRecord {
 }
 
 extension RunData {
+    static func prepareSchema(_ migrator: inout DatabaseMigrator) {
+        migrator.registerMigration("createRunData") { db in
+            try db.create(table: "rundata") { t in
+                t.autoIncrementedPrimaryKey("id")
+                t.column("startTimestamp", .datetime).notNull()
+                t.column("endTimestamp", .datetime)
+                t.column("distanceMeters", .double).notNull()
+                t.column("distanceMetersOffset", .double).notNull().defaults(to: 0.0)
+                t.column("speeds", .text).notNull()
+                t.column("completed", .boolean).notNull().defaults(to: false)
+                t.column("uploadedId", .text)
+                t.column("paused", .boolean).notNull().defaults(to: false)
+            }
+        }
+    }
+}
+
+extension RunData {
     var duration: Measurement<UnitDuration> {
         .init(value: endTimestamp?.timeIntervalSince(startTimestamp) ?? .init(), unit: .seconds)
     }
     
     var distance: Measurement<UnitLength> {
-        .init(value: distanceMeters, unit: .meters)
+        .init(value: distanceMeters + distanceMetersOffset, unit: .meters)
     }
 }
 

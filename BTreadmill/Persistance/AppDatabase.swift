@@ -33,17 +33,6 @@ class AppDatabase {
         }
     }
     
-    func saveRunData(_ runData: inout RunData) async {
-        logger.info("Saving new run data to database")
-        do {
-            runData = try await dbWriter.write { [runData] db in
-                try runData.saved(db)
-            }
-        } catch {
-            logger.error("\(error.localizedDescription)")
-        }
-    }
-    
     func updateRunData(_ runData: RunData) async {
         logger.info("Updating run data to database")
         do {
@@ -73,19 +62,8 @@ class AppDatabase {
         #if DEBUG
         migrator.eraseDatabaseOnSchemaChange = true
         #endif
-            
-        migrator.registerMigration("createRunData") { db in
-            try db.create(table: "rundata") { t in
-                t.autoIncrementedPrimaryKey("id")
-                t.column("startTimestamp", .datetime).notNull()
-                t.column("endTimestamp", .datetime)
-                t.column("distanceMeters", .double).notNull()
-                t.column("distanceMetersOffset", .double).notNull().defaults(to: 0.0)
-                t.column("speeds", .text).notNull()
-                t.column("completed", .boolean).notNull().defaults(to: false)
-                t.column("uploadedId", .text)
-            }
-        }
+        
+        RunData.prepareSchema(&migrator)
         
         return migrator
     }

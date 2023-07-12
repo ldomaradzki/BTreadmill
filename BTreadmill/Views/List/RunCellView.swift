@@ -18,7 +18,7 @@ struct RunCellView: View {
                 Text(runData.endTimestamp ?? .now, formatter: DateFormatter.shortFormatter).fontWeight(.thin).font(.callout)
             }
             Spacer()
-            Text("\(runData.distanceMeters / 1000, specifier: "%.2f")").bold()
+            Text("\(runData.distance.converted(to: .kilometers).value, specifier: "%.2f")").bold()
             Text("km").fontWeight(.thin)
             Spacer()
             Text("\(runData.hours)").bold()

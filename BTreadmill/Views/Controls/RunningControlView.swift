@@ -35,8 +35,10 @@ struct RunningControlView: View {
                     viewModel.sendCommand(.stop)
                 }.niceButton(foregroundColor: .white, backgroundColor: .red, pressedColor: .accentColor)
                 Button("PAUSE") {
-                    viewModel.paused = true
-                    viewModel.sendCommand(.stop)
+                    Task {
+                        await viewModel.pauseRun()
+                        viewModel.sendCommand(.stop)
+                    }
                 }.niceButton(foregroundColor: .white, backgroundColor: .blue, pressedColor: .accentColor)
             }
             

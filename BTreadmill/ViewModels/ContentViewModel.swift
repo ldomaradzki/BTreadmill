@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftUI
 
+@MainActor
 class ContentViewModel: ObservableObject {
     private var bag = Set<AnyCancellable>()
     private let stravaService = StravaService()
@@ -16,7 +17,6 @@ class ContentViewModel: ObservableObject {
     private let appDatabase: AppDatabase
     
     private var runSession: RunSession?
-    var paused: Bool = false
 
     @Published var bluetoothState: Bool = false
     @Published var showAlert = false
@@ -49,10 +49,13 @@ class ContentViewModel: ObservableObject {
                         runSession = RunSession(runData: newRunData, viewModel: self)
                     }
                 case .running(let runningState):
-                    if paused, previousState == .starting {
-                        paused = false
+                    if let runSession {
+                        if runSession.runData.paused, previousState == .starting {
+                            runSession.runData.paused = false
+                            await self.update(runData: runSession.runData)
+                        }
+                        runSession.allRunningStates.append(runningState)
                     }
-                    runSession?.allRunningStates.append(runningState)
                     
                     runningSpeed = runningState.speed
                     distance = runningState.distance
@@ -63,12 +66,13 @@ class ContentViewModel: ObservableObject {
                     distance = runningState.distance
                 case .idling:
                     if let runSession {
-                        if !paused {
+                        if !runSession.runData.paused {
                             runSession.endDate = Date()
-                            Task { [weak self] in await self?.save(runSession: self?.runSession) }
-                        } else {
+                            await self.save(runSession: runSession)
+                        } else if case .stopping(_) = previousState {
                             runSession.runData.distanceMetersOffset += runSession.runData.distanceMeters
-                            Task { [weak self] in await self?.update(runData: runSession.runData) }
+                            runSession.runData.distanceMeters = 0
+                            await self.update(runData: runSession.runData)
                         }
                     }
                     
@@ -83,7 +87,16 @@ class ContentViewModel: ObservableObject {
         treadmillService.sendCommand(command)
     }
     
-    @MainActor
+    func pauseRun() async {
+        guard let runSession else { return }
+        runSession.runData.paused = true
+        await update(runData: runSession.runData)
+    }
+    
+    func closePausedRun(_ runData: RunData) async {
+        await save(runData: runData)
+    }
+    
     func shareOnStrava(runData: RunData) async -> Int? {
         await stravaService.sendPost(
             startDate: runData.startTimestamp,
@@ -91,30 +104,29 @@ class ContentViewModel: ObservableObject {
             distanceMeters: runData.distance.converted(to: .meters).value)
     }
     
-    @MainActor
     func updateUploadedId(runData: RunData, id: Int) async {
         runData.uploadedId = "\(id)"
         await update(runData: runData)
     }
     
-    @MainActor
     func update(runData: RunData) async {
         await appDatabase.updateRunData(runData)
     }
     
-    @MainActor
     func remove(runData: RunData) async {
         await appDatabase.removeRunData(runData)
     }
     
-    @MainActor
     private func save(runSession: RunSession?) async {
         guard let runSession else { return }
 
-        runSession.runData.endTimestamp = .now
-        runSession.runData.completed = true
-        await appDatabase.saveRunData(&runSession.runData)
-        
+        await save(runData: runSession.runData)
         self.runSession = nil
+    }
+    
+    private func save(runData: RunData) async {
+        runData.completed = true
+        runData.paused = false
+        await appDatabase.updateRunData(runData)
     }
 }

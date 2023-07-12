@@ -30,7 +30,7 @@ struct RunListView: View {
         Section(groupedRun.1.headerTitle) {
             ForEach(groupedRun.1, id: \.startTimestamp) { runData in
                 NavigationLink {
-                    RunContentView(id: runData.id!)
+                    RunContentView(id: runData.id!, viewModel: viewModel)
                         .toolbar {
                             Button(action: {
                                 viewModel.showAlert.toggle()
@@ -92,7 +92,7 @@ extension [RunData] {
     }
 
     private func totalDistance() -> String {
-        let distance = map { $0.distanceMeters }.reduce(0, +)
+        let distance = map { $0.distance.converted(to: .meters).value }.reduce(0, +)
         let kmDistance = Measurement<UnitLength>(value: distance, unit: .meters).converted(to: .kilometers).value
         return String(format: "%.2f", kmDistance)
     }

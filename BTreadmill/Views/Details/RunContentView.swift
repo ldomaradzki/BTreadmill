@@ -16,14 +16,33 @@ struct RunContentView: View {
     @Query<SingleRunDataRequest>
     var runData: RunData
     
+    let viewModel: ContentViewModel
+    
     private var speedsArray: [(Int, Double)] { runData.speedsArray.enumerated().map { ($0.offset, $0.element) } }
 
-    init(id: Int64) {
+    init(id: Int64, viewModel: ContentViewModel) {
         _runData = Query(SingleRunDataRequest(id: id), in: \.appDatabase)
+        self.viewModel = viewModel
     }
     
     var body: some View {
         VStack {
+            if runData.paused {
+                Text("Workout is paused. Tap here to close it.")
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, minHeight: 30, alignment: .center)
+                    .background { Color.blue }
+                    .onTapGesture {
+                        Task {
+                            await viewModel.closePausedRun(runData)
+                        }
+                    }
+            } else if !runData.completed {
+                Text("This is your current workout.")
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, minHeight: 30, alignment: .center)
+                    .background { Color.green }
+            }
             Text("Speed").padding(.top, 10)
             Chart {
                 AreaMark(x: .value("", 0), y: .value("", 0))
@@ -52,7 +71,7 @@ struct RunContentView: View {
                 HStack {
                     Text("Distance").bold()
                     Spacer()
-                    Text("\(runData.distanceMeters / 1000, specifier: "%.2f") km")
+                    Text("\(runData.distance.converted(to: .kilometers).value, specifier: "%.2f") km")
                 }.padding(.horizontal,10)
                 Divider()
                 HStack {
