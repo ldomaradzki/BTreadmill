@@ -23,7 +23,7 @@ struct RunListView: View {
             ForEach(groupedRunData, id: \.0) { groupedRun in
                 groupedSection(groupedRun)
             }
-        }.frame(width: 300)
+        }
     }
     
     private func groupedSection(_ groupedRun: (String, [RunData])) -> some View {
