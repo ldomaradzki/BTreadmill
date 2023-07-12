@@ -19,9 +19,6 @@ enum TreadmillCommand {
             return Data(hexString: "FB07A201010500B0FC")!
         case let .speed(value):
             let speed = Int(value.clamped(to: 1.0, and: 6.0) * 10)
-//            var data = Data(hexString: "FB07A10201")!
-//            data.append(Data(hexString: "")!)
-//            data.append(Data(hexString: "00BFFC")!)
             let hexString = "FB07A10201\(speed.toHex())00\((171+speed).toHex())FC"
             return Data(hexString: hexString)!
         case .stop:

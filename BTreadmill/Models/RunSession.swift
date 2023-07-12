@@ -8,26 +8,36 @@
 import Foundation
 
 class RunSession {
-    let run: Run
+    var runData: RunData
+    weak var viewModel: ContentViewModel?
     
     let startDate = Date()
     var endDate: Date? = nil {
         didSet {
-            run.endTimestamp = endDate
+            runData.endTimestamp = endDate
+            
+            Task { @MainActor in
+                await viewModel?.update(runData: runData)
+            }
         }
     }
     var lastRunningState: RunningState? { allRunningStates.last }
     var allRunningStates: [RunningState] = [] {
         didSet {
             guard let lastRunningState else { return }
+
+            runData.endTimestamp = Date()
+            runData.distanceMeters = lastRunningState.distance.converted(to: .meters).value
+            runData.speeds = allRunningStates.map { $0.speed.converted(to: .kilometersPerHour).value }.map { String($0) }.joined(separator: "|")
             
-            run.endTimestamp = Date()
-            run.distanceMeters = lastRunningState.distance.converted(to: .meters).value
-            run.speeds = allRunningStates.map { $0.speed.converted(to: .kilometersPerHour).value } as NSObject
+            Task { @MainActor in
+                await viewModel?.update(runData: runData)
+            }
         }
     }
     
-    init(run: Run) {
-        self.run = run
+    init(runData: RunData, viewModel: ContentViewModel) {
+        self.runData = runData
+        self.viewModel = viewModel
     }
 }

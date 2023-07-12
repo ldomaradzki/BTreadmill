@@ -16,24 +16,25 @@
 		721838802A50BBD800CC6D97 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7218387F2A50BBD800CC6D97 /* ContentViewModel.swift */; };
 		721838822A50BF5300CC6D97 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 721838812A50BF5300CC6D97 /* Info.plist */; };
 		721838A82A52F80400CC6D97 /* RunCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838A72A52F80400CC6D97 /* RunCellView.swift */; };
-		721838AB2A531AD000CC6D97 /* Run+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838AA2A531AD000CC6D97 /* Run+Extensions.swift */; };
 		721838AD2A533DA300CC6D97 /* DateFormatter+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838AC2A533DA300CC6D97 /* DateFormatter+Extensions.swift */; };
 		721838AF2A5345A700CC6D97 /* RunContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838AE2A5345A700CC6D97 /* RunContentView.swift */; };
 		721838B12A535C8C00CC6D97 /* RunListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838B02A535C8C00CC6D97 /* RunListView.swift */; };
-		721838B62A54AD1C00CC6D97 /* GroupedRuns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721838B52A54AD1C00CC6D97 /* GroupedRuns.swift */; };
 		726E40812A554A9100D46E30 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40802A554A9100D46E30 /* Data+Extensions.swift */; };
 		726E40832A55845E00D46E30 /* RunningState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40822A55845E00D46E30 /* RunningState.swift */; };
 		726E40852A55846C00D46E30 /* TreadmillCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40842A55846C00D46E30 /* TreadmillCommand.swift */; };
 		726E40872A55847900D46E30 /* TreadmillState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40862A55847900D46E30 /* TreadmillState.swift */; };
 		726E408A2A55CD1100D46E30 /* RunningControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E40892A55CD1100D46E30 /* RunningControlView.swift */; };
 		726E408C2A55CD8500D46E30 /* IdlingControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726E408B2A55CD8500D46E30 /* IdlingControlView.swift */; };
+		7289A9AA2A5F2E78003D5F40 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7289A9A92A5F2E78003D5F40 /* AppDelegate.swift */; };
 		72BCB65D2A4E09C5003FFA9D /* BTreadmillApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72BCB65C2A4E09C5003FFA9D /* BTreadmillApp.swift */; };
 		72BCB65F2A4E09C5003FFA9D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72BCB65E2A4E09C5003FFA9D /* ContentView.swift */; };
 		72BCB6612A4E09C6003FFA9D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72BCB6602A4E09C6003FFA9D /* Assets.xcassets */; };
-		72BCB6642A4E09C6003FFA9D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72BCB6632A4E09C6003FFA9D /* Preview Assets.xcassets */; };
-		72BCB6662A4E09C6003FFA9D /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72BCB6652A4E09C6003FFA9D /* Persistence.swift */; };
-		72BCB6692A4E09C6003FFA9D /* BTreadmill.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 72BCB6672A4E09C6003FFA9D /* BTreadmill.xcdatamodeld */; };
 		72BCB6782A4E11AF003FFA9D /* OAuth2 in Frameworks */ = {isa = PBXBuildFile; productRef = 72BCB6772A4E11AF003FFA9D /* OAuth2 */; };
+		72F48B6F2A5B4DB000C3EB35 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 72F48B6E2A5B4DB000C3EB35 /* GRDB */; };
+		72F48B742A5B574100C3EB35 /* AppDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F48B732A5B574100C3EB35 /* AppDatabase.swift */; };
+		72F48B772A5B595000C3EB35 /* RunData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F48B762A5B595000C3EB35 /* RunData.swift */; };
+		72F48B7A2A5BD3AB00C3EB35 /* RunDataRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F48B792A5BD3AB00C3EB35 /* RunDataRequests.swift */; };
+		72F48B7D2A5BD3DF00C3EB35 /* GRDBQuery in Frameworks */ = {isa = PBXBuildFile; productRef = 72F48B7C2A5BD3DF00C3EB35 /* GRDBQuery */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,26 +47,25 @@
 		7218387F2A50BBD800CC6D97 /* ContentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewModel.swift; sourceTree = "<group>"; };
 		721838812A50BF5300CC6D97 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		721838A72A52F80400CC6D97 /* RunCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunCellView.swift; sourceTree = "<group>"; };
-		721838AA2A531AD000CC6D97 /* Run+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Run+Extensions.swift"; sourceTree = "<group>"; };
 		721838AC2A533DA300CC6D97 /* DateFormatter+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DateFormatter+Extensions.swift"; sourceTree = "<group>"; };
 		721838AE2A5345A700CC6D97 /* RunContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunContentView.swift; sourceTree = "<group>"; };
 		721838B02A535C8C00CC6D97 /* RunListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunListView.swift; sourceTree = "<group>"; };
-		721838B52A54AD1C00CC6D97 /* GroupedRuns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedRuns.swift; sourceTree = "<group>"; };
 		726E40802A554A9100D46E30 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		726E40822A55845E00D46E30 /* RunningState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningState.swift; sourceTree = "<group>"; };
 		726E40842A55846C00D46E30 /* TreadmillCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreadmillCommand.swift; sourceTree = "<group>"; };
 		726E40862A55847900D46E30 /* TreadmillState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreadmillState.swift; sourceTree = "<group>"; };
 		726E40892A55CD1100D46E30 /* RunningControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningControlView.swift; sourceTree = "<group>"; };
 		726E408B2A55CD8500D46E30 /* IdlingControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdlingControlView.swift; sourceTree = "<group>"; };
+		7289A9A92A5F2E78003D5F40 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		72BCB6592A4E09C5003FFA9D /* BTreadmill.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BTreadmill.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		72BCB65C2A4E09C5003FFA9D /* BTreadmillApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTreadmillApp.swift; sourceTree = "<group>"; };
 		72BCB65E2A4E09C5003FFA9D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		72BCB6602A4E09C6003FFA9D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		72BCB6632A4E09C6003FFA9D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		72BCB6652A4E09C6003FFA9D /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		72BCB6682A4E09C6003FFA9D /* BTreadmill.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BTreadmill.xcdatamodel; sourceTree = "<group>"; };
 		72BCB66A2A4E09C6003FFA9D /* BTreadmill.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BTreadmill.entitlements; sourceTree = "<group>"; };
 		72F48B6C2A58490B00C3EB35 /* TODO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TODO.h; sourceTree = "<group>"; };
+		72F48B732A5B574100C3EB35 /* AppDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDatabase.swift; sourceTree = "<group>"; };
+		72F48B762A5B595000C3EB35 /* RunData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunData.swift; sourceTree = "<group>"; };
+		72F48B792A5BD3AB00C3EB35 /* RunDataRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunDataRequests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +74,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				72BCB6782A4E11AF003FFA9D /* OAuth2 in Frameworks */,
+				72F48B6F2A5B4DB000C3EB35 /* GRDB in Frameworks */,
+				72F48B7D2A5BD3DF00C3EB35 /* GRDBQuery in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,7 +114,6 @@
 		721838A92A531AC700CC6D97 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				721838AA2A531AD000CC6D97 /* Run+Extensions.swift */,
 				721838AC2A533DA300CC6D97 /* DateFormatter+Extensions.swift */,
 				726E40802A554A9100D46E30 /* Data+Extensions.swift */,
 				7207F4502A55EA4700772D1B /* Int+Extensions.swift */,
@@ -141,7 +142,6 @@
 		721838B42A54AD1000CC6D97 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				721838B52A54AD1C00CC6D97 /* GroupedRuns.swift */,
 				726E40822A55845E00D46E30 /* RunningState.swift */,
 				726E40842A55846C00D46E30 /* TreadmillCommand.swift */,
 				726E40862A55847900D46E30 /* TreadmillState.swift */,
@@ -178,6 +178,7 @@
 		72BCB65B2A4E09C5003FFA9D /* BTreadmill */ = {
 			isa = PBXGroup;
 			children = (
+				72F48B722A5B573700C3EB35 /* Persistance */,
 				721838B42A54AD1000CC6D97 /* Models */,
 				721838A92A531AC700CC6D97 /* Extensions */,
 				7218387E2A50BBCB00CC6D97 /* ViewModels */,
@@ -185,22 +186,38 @@
 				721838782A50AF4D00CC6D97 /* Views */,
 				72BCB65C2A4E09C5003FFA9D /* BTreadmillApp.swift */,
 				72BCB6602A4E09C6003FFA9D /* Assets.xcassets */,
-				72BCB6652A4E09C6003FFA9D /* Persistence.swift */,
 				72BCB66A2A4E09C6003FFA9D /* BTreadmill.entitlements */,
-				72BCB6672A4E09C6003FFA9D /* BTreadmill.xcdatamodeld */,
-				72BCB6622A4E09C6003FFA9D /* Preview Content */,
 				721838812A50BF5300CC6D97 /* Info.plist */,
 				72F48B6C2A58490B00C3EB35 /* TODO.h */,
+				7289A9A92A5F2E78003D5F40 /* AppDelegate.swift */,
 			);
 			path = BTreadmill;
 			sourceTree = "<group>";
 		};
-		72BCB6622A4E09C6003FFA9D /* Preview Content */ = {
+		72F48B722A5B573700C3EB35 /* Persistance */ = {
 			isa = PBXGroup;
 			children = (
-				72BCB6632A4E09C6003FFA9D /* Preview Assets.xcassets */,
+				72F48B782A5BD3A000C3EB35 /* Requests */,
+				72F48B752A5B594500C3EB35 /* Models */,
+				72F48B732A5B574100C3EB35 /* AppDatabase.swift */,
 			);
-			path = "Preview Content";
+			path = Persistance;
+			sourceTree = "<group>";
+		};
+		72F48B752A5B594500C3EB35 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				72F48B762A5B595000C3EB35 /* RunData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		72F48B782A5BD3A000C3EB35 /* Requests */ = {
+			isa = PBXGroup;
+			children = (
+				72F48B792A5BD3AB00C3EB35 /* RunDataRequests.swift */,
+			);
+			path = Requests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -221,6 +238,8 @@
 			name = BTreadmill;
 			packageProductDependencies = (
 				72BCB6772A4E11AF003FFA9D /* OAuth2 */,
+				72F48B6E2A5B4DB000C3EB35 /* GRDB */,
+				72F48B7C2A5BD3DF00C3EB35 /* GRDBQuery */,
 			);
 			productName = BTreadmill;
 			productReference = 72BCB6592A4E09C5003FFA9D /* BTreadmill.app */;
@@ -252,6 +271,8 @@
 			mainGroup = 72BCB6502A4E09C5003FFA9D;
 			packageReferences = (
 				72BCB6762A4E11AF003FFA9D /* XCRemoteSwiftPackageReference "OAuth2" */,
+				72F48B6D2A5B4DB000C3EB35 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+				72F48B7B2A5BD3DF00C3EB35 /* XCRemoteSwiftPackageReference "GRDBQuery" */,
 			);
 			productRefGroup = 72BCB65A2A4E09C5003FFA9D /* Products */;
 			projectDirPath = "";
@@ -267,7 +288,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				72BCB6642A4E09C6003FFA9D /* Preview Assets.xcassets in Resources */,
 				72BCB6612A4E09C6003FFA9D /* Assets.xcassets in Resources */,
 				721838822A50BF5300CC6D97 /* Info.plist in Resources */,
 			);
@@ -281,17 +301,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				721838802A50BBD800CC6D97 /* ContentViewModel.swift in Sources */,
-				72BCB6662A4E09C6003FFA9D /* Persistence.swift in Sources */,
 				721838B12A535C8C00CC6D97 /* RunListView.swift in Sources */,
+				72F48B772A5B595000C3EB35 /* RunData.swift in Sources */,
 				72BCB65F2A4E09C5003FFA9D /* ContentView.swift in Sources */,
 				721838752A50332600CC6D97 /* StravaService.swift in Sources */,
 				726E408C2A55CD8500D46E30 /* IdlingControlView.swift in Sources */,
+				72F48B7A2A5BD3AB00C3EB35 /* RunDataRequests.swift in Sources */,
 				726E40852A55846C00D46E30 /* TreadmillCommand.swift in Sources */,
 				72BCB65D2A4E09C5003FFA9D /* BTreadmillApp.swift in Sources */,
-				721838AB2A531AD000CC6D97 /* Run+Extensions.swift in Sources */,
 				7207F4512A55EA4700772D1B /* Int+Extensions.swift in Sources */,
 				7218387D2A50B66800CC6D97 /* TreadmillService.swift in Sources */,
-				721838B62A54AD1C00CC6D97 /* GroupedRuns.swift in Sources */,
 				726E40812A554A9100D46E30 /* Data+Extensions.swift in Sources */,
 				721838A82A52F80400CC6D97 /* RunCellView.swift in Sources */,
 				721838772A50351400CC6D97 /* BluetoothService.swift in Sources */,
@@ -300,9 +319,10 @@
 				726E408A2A55CD1100D46E30 /* RunningControlView.swift in Sources */,
 				721838AF2A5345A700CC6D97 /* RunContentView.swift in Sources */,
 				7207F4552A5693FF00772D1B /* RunSession.swift in Sources */,
-				72BCB6692A4E09C6003FFA9D /* BTreadmill.xcdatamodeld in Sources */,
 				7207F4532A55EAF400772D1B /* Double+Extensions.swift in Sources */,
 				726E40832A55845E00D46E30 /* RunningState.swift in Sources */,
+				72F48B742A5B574100C3EB35 /* AppDatabase.swift in Sources */,
+				7289A9AA2A5F2E78003D5F40 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -427,6 +447,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = BTreadmill/BTreadmill.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -435,6 +456,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BTreadmill/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connecting with bluetooth enabled treadmill";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -453,6 +475,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = BTreadmill/BTreadmill.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -461,6 +484,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BTreadmill/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connecting with bluetooth enabled treadmill";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -506,6 +530,22 @@
 				minimumVersion = 5.0.0;
 			};
 		};
+		72F48B6D2A5B4DB000C3EB35 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		72F48B7B2A5BD3DF00C3EB35 /* XCRemoteSwiftPackageReference "GRDBQuery" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDBQuery";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.7.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -514,20 +554,17 @@
 			package = 72BCB6762A4E11AF003FFA9D /* XCRemoteSwiftPackageReference "OAuth2" */;
 			productName = OAuth2;
 		};
-/* End XCSwiftPackageProductDependency section */
-
-/* Begin XCVersionGroup section */
-		72BCB6672A4E09C6003FFA9D /* BTreadmill.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				72BCB6682A4E09C6003FFA9D /* BTreadmill.xcdatamodel */,
-			);
-			currentVersion = 72BCB6682A4E09C6003FFA9D /* BTreadmill.xcdatamodel */;
-			path = BTreadmill.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
+		72F48B6E2A5B4DB000C3EB35 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 72F48B6D2A5B4DB000C3EB35 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
 		};
-/* End XCVersionGroup section */
+		72F48B7C2A5BD3DF00C3EB35 /* GRDBQuery */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 72F48B7B2A5BD3DF00C3EB35 /* XCRemoteSwiftPackageReference "GRDBQuery" */;
+			productName = GRDBQuery;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 72BCB6512A4E09C5003FFA9D /* Project object */;
 }

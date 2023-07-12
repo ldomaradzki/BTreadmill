@@ -7,74 +7,90 @@
 
 import Foundation
 import SwiftUI
+import GRDBQuery
 
 struct RunListView: View {
+    @Environment(\.appDatabase) private var appDatabase
+    
     @StateObject
     var viewModel: ContentViewModel
     
-    @SectionedFetchRequest(sectionIdentifier: \.day, sortDescriptors: [NSSortDescriptor(keyPath: \Run.startTimestamp, ascending: false)], animation: .default)
-    var groupedRuns: SectionedFetchResults<String, Run>
+    @Query(GroupedRunDataRequest())
+    private var groupedRunData: [(String, [RunData])]
 
     var body: some View {
         List {
-            ForEach(groupedRuns) { groupedRun in
+            ForEach(groupedRunData, id: \.0) { groupedRun in
                 groupedSection(groupedRun)
             }
-        }
+        }.frame(width: 300)
     }
     
-    private func groupedSection(_ groupedRun: SectionedFetchResults<String, Run>.Element) -> some View {
-        Section(groupedRun.headerTitle) {
-            ForEach(groupedRun) { run in
+    private func groupedSection(_ groupedRun: (String, [RunData])) -> some View {
+        Section(groupedRun.1.headerTitle) {
+            ForEach(groupedRun.1, id: \.startTimestamp) { runData in
                 NavigationLink {
-                    RunContentView(run: run)
+                    RunContentView(id: runData.id!)
                         .toolbar {
-                            Button(action: { viewModel.showAlert.toggle() }) {
+                            Button(action: {
+                                viewModel.showAlert.toggle()
+                            }) {
                                 Image(systemName: "trash").foregroundColor(.red)
                             }
                             .alert(isPresented: $viewModel.showAlert) {
-                                Alert(title: Text("Remove this run?"), primaryButton: .destructive(Text("Yes"), action: { deleteRun(run: run) }), secondaryButton: .cancel())
+                                Alert(title: Text("Remove this run?"),
+                                      primaryButton: .destructive(Text("Yes"),
+                                      action: {
+                                        Task {
+                                            await deleteRun(runData: runData)
+                                        }
+                                      }),
+                                      secondaryButton: .cancel())
                             }
                             
-                            Button(action: { openWebActivity(run: run) }) {
-                                Image(systemName: "globe")
-                            }
-                            .disabled(run.uploadedId == 0)
+                            Button(action: {
+                                openWebActivity(runData: runData)
+                            }) { Image(systemName: "globe") }
+                            .disabled(runData.uploadedId == nil)
                             
-                            Button(action: { Task { await shareButton(run: run) } }) {
-                                Image(systemName: "square.and.arrow.up")
-                            }
+                            Button(action: {
+                                Task {
+                                    await shareButton(runData: runData)
+                                }
+                            }) { Image(systemName: "square.and.arrow.up") }
                         }
                 } label: {
-                    RunCellView(run: run).frame(height: 44, alignment: .leading)
+                    RunCellView(runData: runData).frame(height: 44, alignment: .leading)
                 }
             }
         }
     }
     
     @MainActor
-    func shareButton(run: Run) async {
-        if let id = await viewModel.shareOnStrava(run: run) {
-            viewModel.updateUploadedId(run: run, id: id)
+    func shareButton(runData: RunData) async {
+        if let id = await viewModel.shareOnStrava(runData: runData) {
+            await viewModel.updateUploadedId(runData: runData, id: id)
         }
     }
     
-    func openWebActivity(run: Run) {
-        let url = URL(string: "https://www.strava.com/activities/\(run.uploadedId)")!
+    func openWebActivity(runData: RunData) {
+        guard let uploadedId = runData.uploadedId else { return }
+        let url = URL(string: "https://www.strava.com/activities/\(uploadedId)")!
         NSWorkspace.shared.open(url)
     }
     
-    func deleteRun(run: Run) {
-        viewModel.remove(run: run)
+    @MainActor
+    func deleteRun(runData: RunData) async {
+        await viewModel.remove(runData: runData)
     }
     
 }
 
-extension SectionedFetchResults<String, Run>.Element {
+extension [RunData] {
     var headerTitle: String {
-        "\(DateFormatter.mediumDateFormatter.string(from: first!.startTimestamp!)) (total \(totalDistance()) km)"
+        "\(DateFormatter.mediumDateFormatter.string(from: first!.startTimestamp)) (total \(totalDistance()) km)"
     }
-    
+
     private func totalDistance() -> String {
         let distance = map { $0.distanceMeters }.reduce(0, +)
         let kmDistance = Measurement<UnitLength>(value: distance, unit: .meters).converted(to: .kilometers).value

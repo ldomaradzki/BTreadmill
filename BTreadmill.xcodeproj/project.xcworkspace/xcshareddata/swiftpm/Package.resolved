@@ -1,6 +1,24 @@
 {
   "pins" : [
     {
+      "identity" : "grdb.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/groue/GRDB.swift.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "e83f3eb25ef4d5a36a13dbee98f8ac67e24e5c8f"
+      }
+    },
+    {
+      "identity" : "grdbquery",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/groue/GRDBQuery",
+      "state" : {
+        "revision" : "be64298b4f9d70510226fa7e698aef84f41cec02",
+        "version" : "0.7.0"
+      }
+    },
+    {
       "identity" : "oauth2",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/p2/OAuth2.git",

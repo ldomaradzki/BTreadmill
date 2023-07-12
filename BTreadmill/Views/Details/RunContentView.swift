@@ -8,12 +8,20 @@
 import Foundation
 import SwiftUI
 import Charts
+import GRDBQuery
 
 struct RunContentView: View {
-    @ObservedObject
-    var run: Run
-    var speedsArray: [(Int, Double)] { run.speedsArray.enumerated().map { ($0.offset, $0.element) } }
+    @Environment(\.appDatabase) private var appDatabase
+    
+    @Query<SingleRunDataRequest>
+    var runData: RunData
+    
+    private var speedsArray: [(Int, Double)] { runData.speedsArray.enumerated().map { ($0.offset, $0.element) } }
 
+    init(id: Int64) {
+        _runData = Query(SingleRunDataRequest(id: id), in: \.appDatabase)
+    }
+    
     var body: some View {
         VStack {
             Text("Speed").padding(.top, 10)
@@ -32,46 +40,34 @@ struct RunContentView: View {
                 HStack {
                     Text("Avg Speed").bold()
                     Spacer()
-                    Text("\(run.speedsArray.reduce(0.0, +)/Double(run.speedsArray.count), specifier: "%.1f") km/h")
+                    Text("\(runData.speedsArray.reduce(0.0, +)/Double(runData.speedsArray.count), specifier: "%.1f") km/h")
                 }.padding(.horizontal, 10)
                 Divider()
                 HStack {
                     Text("Max Speed").bold()
                     Spacer()
-                    Text("\(run.speedsArray.max() ?? 0.0, specifier: "%.1f") km/h")
+                    Text("\(runData.speedsArray.max() ?? 0.0, specifier: "%.1f") km/h")
                 }.padding(.horizontal,10)
                 Divider()
                 HStack {
                     Text("Distance").bold()
                     Spacer()
-                    Text("\(run.distanceMeters / 1000, specifier: "%.2f") km")
+                    Text("\(runData.distanceMeters / 1000, specifier: "%.2f") km")
                 }.padding(.horizontal,10)
                 Divider()
                 HStack {
                     Text("Elapsed Time").bold()
                     Spacer()
-                    Text("\(run.durationString)")
+                    Text("\(runData.durationString)")
                 }.padding(.horizontal,10)
                 Divider()
                 HStack {
                     Text("Pace").bold()
                     Spacer()
-                    Text(run.paceString)
+                    Text(runData.paceString)
                 }.padding(.horizontal,10)
             }
             
         }
-    }
-}
-
-struct RunContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        let testRun = Run(context: PersistenceController.preview.container.viewContext)
-        testRun.startTimestamp = Date()
-        testRun.endTimestamp = Date().addingTimeInterval(95*60)
-        testRun.distanceMeters = 4500
-        testRun.speeds = [1.0, 1.1, 1.3, 1.5, 2.0, 2.0, 2.0, 2.0, 2.3, 2.4, 2.5, 2.5, 2.5, 2.5, 2.0, 1.5, 1.0, 0.5, 0.0] as NSObject
-
-        return RunContentView(run: testRun).frame(width: 400, height: 500, alignment: .leading)
     }
 }

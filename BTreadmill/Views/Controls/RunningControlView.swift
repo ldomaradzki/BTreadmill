@@ -30,17 +30,16 @@ struct RunningControlView: View {
     
     var body: some View {
         HStack {
-            ZStack {
-                Circle()
-                    .fill(Color.red)
-                    .frame(width: 50, height: 50, alignment: .center)
-                Text("Stop")
-                    .foregroundColor(.black)
-                    .fontWeight(.heavy)
+            VStack {
+                Button("STOP") {
+                    viewModel.sendCommand(.stop)
+                }.niceButton(foregroundColor: .white, backgroundColor: .red, pressedColor: .accentColor)
+                Button("PAUSE") {
+                    viewModel.paused = true
+                    viewModel.sendCommand(.stop)
+                }.niceButton(foregroundColor: .white, backgroundColor: .blue, pressedColor: .accentColor)
             }
-            .onTapGesture {
-                viewModel.sendCommand(.stop)
-            }
+            
             VStack(spacing: 5) {
                 Button(action: {
                     guard let currentSpeed = viewModel.runningSpeed?.value else { return }
@@ -82,8 +81,31 @@ struct RunningControlView: View {
 
 struct RunningControlView_Previews: PreviewProvider {
     static var previews: some View {
-        let contentViewModel = ContentViewModel()
+        let contentViewModel = ContentViewModel(appDatabase: .shared)
         return RunningControlView(viewModel: contentViewModel).frame(width: 300, height: 80)
     }
 }
 
+
+struct NiceButtonStyle: ButtonStyle {
+  var foregroundColor: Color
+  var backgroundColor: Color
+  var pressedColor: Color
+
+  func makeBody(configuration: Self.Configuration) -> some View {
+    configuration.label
+      .font(.headline)
+      .padding(.horizontal, 10)
+      .padding(.vertical, 5)
+      .foregroundColor(foregroundColor)
+      .background(configuration.isPressed ? pressedColor : backgroundColor)
+      .cornerRadius(5)
+  }
+}
+
+
+extension View {
+  func niceButton(foregroundColor: Color = .white, backgroundColor: Color = .gray, pressedColor: Color = .accentColor) -> some View {
+    self.buttonStyle(NiceButtonStyle(foregroundColor: foregroundColor, backgroundColor: backgroundColor, pressedColor: pressedColor))
+  }
+}
