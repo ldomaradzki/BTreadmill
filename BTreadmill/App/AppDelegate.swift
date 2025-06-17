@@ -31,7 +31,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        statusBarController?.showMenu()
+        // Only show menu if there are no visible windows and user explicitly reopened
+        if !flag {
+            statusBarController?.showMenu()
+        }
         return false
     }
     

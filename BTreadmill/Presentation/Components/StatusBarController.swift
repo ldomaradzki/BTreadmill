@@ -144,7 +144,18 @@ class StatusBarController: NSObject {
             }
         }
         
-        button.title = text
+        // Only update title if we have text to show AND we're not using an icon
+        if !text.isEmpty && button.image == nil {
+            button.title = text
+        } else if text.isEmpty {
+            // Clear title when no data to show (preserves icon if present)
+            if button.image != nil {
+                button.title = ""
+            }
+        } else if !text.isEmpty && button.image != nil {
+            // Show both icon and text when we have data
+            button.title = " " + text // Space before text for better visual separation
+        }
     }
     
     @objc private func togglePopover() {
