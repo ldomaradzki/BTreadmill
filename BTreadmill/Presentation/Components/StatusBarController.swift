@@ -185,7 +185,23 @@ class StatusBarController: NSObject {
     }
     
     @objc private func openSettings() {
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        // Create and show settings window
+        let settingsView = SettingsView()
+        let hostingController = NSHostingController(rootView: settingsView)
+        
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        
+        window.contentViewController = hostingController
+        window.title = "BTreadmill Settings"
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        
+        // Activate the app to bring the window to front
         NSApp.activate(ignoringOtherApps: true)
     }
     
