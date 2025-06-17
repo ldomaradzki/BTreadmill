@@ -10,6 +10,7 @@
 		02DABE0DB01CF0B60C8A0F30 /* TreadmillState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B4C91C09CF55B67985ABA0 /* TreadmillState.swift */; };
 		0B55367F19224A384238B1E2 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72DF083B5A95320E711D079 /* UserProfile.swift */; };
 		126033792B92999D9A25BACB /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89CCF68B490A90305E0EFA92 /* StatusBarController.swift */; };
+		26A12D169DA4128348F487D5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 042472EF472ADD86221EEFFD /* Assets.xcassets */; };
 		273DFA07909A7CD5C3FE5283 /* TreadmillService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F726B8D0DF33FCDC643D854 /* TreadmillService.swift */; };
 		2C0F3029F34505EC32DBDCDB /* WorkoutSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC50DA8CEDBC90556DD795C4 /* WorkoutSession.swift */; };
 		30B7FCD8D0422F9F30675563 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B024495C24CA065DACE1D0AB /* CoreData.framework */; };
@@ -29,6 +30,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		042472EF472ADD86221EEFFD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0F726B8D0DF33FCDC643D854 /* TreadmillService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreadmillService.swift; sourceTree = "<group>"; };
 		1E0EA2AFC646F4E5C211D454 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		29EB589EDE129FA7C68C3818 /* RunningState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningState.swift; sourceTree = "<group>"; };
@@ -83,6 +85,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		29418AA888F78774253718A5 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				042472EF472ADD86221EEFFD /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		3BDC5FC95BB07FC1C062D50E /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -113,6 +123,7 @@
 				F80042AEBEF13AFB1A1C7073 /* App */,
 				3BDC5FC95BB07FC1C062D50E /* Core */,
 				A02F0BD53B5D93C55CCA1E22 /* Presentation */,
+				29418AA888F78774253718A5 /* Resources */,
 			);
 			path = BTreadmill;
 			sourceTree = "<group>";
@@ -190,6 +201,7 @@
 			buildConfigurationList = 8E0994FDE60A0ED877EE810F /* Build configuration list for PBXNativeTarget "BTreadmill" */;
 			buildPhases = (
 				3B696C4AB5F5EDD2648F6101 /* Sources */,
+				48A8747C52C91A38F1E1E8D9 /* Resources */,
 				E8F191367E0375E5CDCE0DA0 /* Frameworks */,
 			);
 			buildRules = (
@@ -231,6 +243,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		48A8747C52C91A38F1E1E8D9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26A12D169DA4128348F487D5 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		3B696C4AB5F5EDD2648F6101 /* Sources */ = {

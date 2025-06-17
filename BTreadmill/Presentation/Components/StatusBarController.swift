@@ -28,9 +28,24 @@ class StatusBarController: NSObject {
         
         guard let button = statusItem?.button else { return }
         
-        // Set initial icon
-        button.image = NSImage(systemSymbolName: "figure.walk", accessibilityDescription: "BTreadmill")
-        button.image?.isTemplate = true
+        // Try multiple icon options in order of preference
+        if let image = NSImage(named: "StatusBarIcon") {
+            // Custom icon from assets
+            button.image = image
+            button.image?.isTemplate = true
+        } else if let image = NSImage(systemSymbolName: "figure.walk", accessibilityDescription: "BTreadmill") {
+            // SF Symbol
+            button.image = image
+            button.image?.isTemplate = true
+        } else if let image = NSImage(named: NSImage.userAccountsName) {
+            // System icon fallback
+            button.image = image
+            button.image?.isTemplate = true
+        } else {
+            // Text fallback
+            button.title = "T"
+            button.font = NSFont.systemFont(ofSize: 14, weight: .medium)
+        }
         
         // Set up button action
         button.action = #selector(togglePopover)
@@ -84,9 +99,27 @@ class StatusBarController: NSObject {
     private func updateStatusBarIcon(isConnected: Bool) {
         guard let button = statusItem?.button else { return }
         
+        // Try multiple icon options in order of preference
         let iconName = isConnected ? "figure.walk" : "figure.walk.slash"
-        button.image = NSImage(systemSymbolName: iconName, accessibilityDescription: "BTreadmill")
-        button.image?.isTemplate = true
+        if let image = NSImage(named: "StatusBarIcon") {
+            // Custom icon - change opacity to indicate connection
+            button.image = image
+            button.image?.isTemplate = true
+            button.alphaValue = isConnected ? 1.0 : 0.5
+            button.title = "" // Clear title when using image
+        } else if let image = NSImage(systemSymbolName: iconName, accessibilityDescription: "BTreadmill") {
+            // SF Symbol
+            button.image = image
+            button.image?.isTemplate = true
+            button.alphaValue = 1.0
+            button.title = "" // Clear title when using image
+        } else {
+            // Text fallback with connection indicator
+            button.image = nil
+            button.alphaValue = 1.0
+            button.title = isConnected ? "T●" : "T○"
+            button.font = NSFont.systemFont(ofSize: 14, weight: .medium)
+        }
         
         // Update tooltip
         button.toolTip = isConnected ? "BTreadmill - Connected" : "BTreadmill - Disconnected"

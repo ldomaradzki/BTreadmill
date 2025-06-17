@@ -26,7 +26,6 @@ targets:
           - "*.md"
     resources:
       - path: BTreadmill/Resources
-        optional: true
     settings:
       base:
         INFOPLIST_FILE: BTreadmill/Info.plist
