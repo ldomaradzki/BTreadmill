@@ -6,6 +6,7 @@ class StatusBarController: NSObject {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
     private var bag = Set<AnyCancellable>()
+    var settingsWindow: NSWindow?
     
     private let treadmillService: TreadmillServiceProtocol
     private let workoutManager: WorkoutManager
@@ -94,6 +95,14 @@ class StatusBarController: NSObject {
             self?.updateStatusBarText(workout: workout, treadmillState: treadmillState, showSpeed: showSpeed)
         }
         .store(in: &bag)
+        
+        // Listen for settings window requests from main menu
+        NotificationCenter.default.publisher(for: NSNotification.Name("OpenSettings"))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.openSettings()
+            }
+            .store(in: &bag)
     }
     
     private func updateStatusBarIcon(isConnected: Bool) {
@@ -185,13 +194,27 @@ class StatusBarController: NSObject {
     }
     
     @objc private func openSettings() {
-        // Create and show settings window
+        // If settings window already exists, just bring it to front
+        if let existingWindow = settingsWindow {
+            existingWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
+        // Create new settings window using a different approach
+        DispatchQueue.main.async { [weak self] in
+            self?.createSettingsWindow()
+        }
+    }
+    
+    private func createSettingsWindow() {
+        // Create the settings view with explicit dependencies
         let settingsView = SettingsView()
         let hostingController = NSHostingController(rootView: settingsView)
         
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
-            styleMask: [.titled, .closable, .resizable],
+            styleMask: [.titled, .closable, .resizable, .miniaturizable],
             backing: .buffered,
             defer: false
         )
@@ -199,9 +222,15 @@ class StatusBarController: NSObject {
         window.contentViewController = hostingController
         window.title = "BTreadmill Settings"
         window.center()
-        window.makeKeyAndOrderFront(nil)
         
-        // Activate the app to bring the window to front
+        // Use a custom window controller to manage lifecycle
+        let windowController = SettingsWindowController(window: window)
+        windowController.statusBarController = self
+        
+        // Retain the window
+        self.settingsWindow = window
+        
+        window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
     
@@ -214,3 +243,4 @@ class StatusBarController: NSObject {
         popover?.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
     }
 }
+

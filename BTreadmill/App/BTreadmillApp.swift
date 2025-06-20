@@ -6,11 +6,10 @@ struct BTreadmillApp: App {
     var appDelegate
     
     var body: some Scene {
-        // No scenes needed for menu bar only app
-        WindowGroup {
+        // Use Settings to create an empty scene that doesn't show by default
+        Settings {
             EmptyView()
         }
-        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
     }
 }

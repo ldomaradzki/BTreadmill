@@ -23,7 +23,7 @@ struct SettingsView: View {
                     Label("Display", systemImage: "display")
                 }
         }
-        .frame(width: 600, height: 400)
+        .frame(minWidth: 600, minHeight: 400)
     }
 }
 
@@ -31,36 +31,59 @@ struct GeneralSettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
     
     var body: some View {
-        Form {
-            Section("Application") {
-                Toggle("Launch at login", isOn: $settingsManager.launchAtLogin)
-                Toggle("Enable notifications", isOn: $settingsManager.enableNotifications)
-            }
-            
-            Section("Treadmill") {
-                Toggle("Auto-connect to known devices", isOn: $settingsManager.userProfile.autoConnectEnabled)
-                
-                HStack {
-                    Text("Default speed:")
-                    Spacer()
-                    TextField("Speed", value: $settingsManager.userProfile.defaultSpeed, format: .number)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 80)
-                    Text("km/h")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Application Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Application")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle("Launch at login", isOn: $settingsManager.launchAtLogin)
+                        Toggle("Enable notifications", isOn: $settingsManager.enableNotifications)
+                    }
                 }
                 
-                HStack {
-                    Text("Maximum speed:")
-                    Spacer()
-                    TextField("Max Speed", value: $settingsManager.userProfile.maxSpeed, format: .number)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 80)
-                    Text("km/h")
+                Divider()
+                
+                // Treadmill Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Treadmill")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle("Auto-connect to known devices", isOn: $settingsManager.userProfile.autoConnectEnabled)
+                        
+                        HStack {
+                            Text("Default speed:")
+                                .frame(minWidth: 120, alignment: .leading)
+                            Spacer()
+                            TextField("Speed", value: $settingsManager.userProfile.defaultSpeed, format: .number)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 80)
+                            Text("km/h")
+                                .frame(width: 40, alignment: .leading)
+                        }
+                        
+                        HStack {
+                            Text("Maximum speed:")
+                                .frame(minWidth: 120, alignment: .leading)
+                            Spacer()
+                            TextField("Max Speed", value: $settingsManager.userProfile.maxSpeed, format: .number)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 80)
+                            Text("km/h")
+                                .frame(width: 40, alignment: .leading)
+                        }
+                    }
                 }
-            }
-            
-            Section {
-                HStack {
+                
+                Divider()
+                
+                // Actions Section
+                HStack(spacing: 12) {
                     Button("Reset to Defaults") {
                         settingsManager.resetToDefaults()
                     }
@@ -78,9 +101,12 @@ struct GeneralSettingsView: View {
                     }
                     .buttonStyle(.bordered)
                 }
+                
+                Spacer()
             }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding()
     }
     
     private func exportSettings() {
@@ -115,43 +141,80 @@ struct UserProfileView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
     
     var body: some View {
-        Form {
-            Section("Personal Information") {
-                HStack {
-                    Text("Weight:")
-                    Spacer()
-                    TextField("Weight", value: $settingsManager.userProfile.weight.value, format: .number)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 80)
-                    Text(settingsManager.userProfile.weight.unit.symbol)
-                }
-                
-                HStack {
-                    Text("Stride length:")
-                    Spacer()
-                    TextField("Stride", value: $settingsManager.userProfile.strideLength.value, format: .number)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 80)
-                    Text(settingsManager.userProfile.strideLength.unit.symbol)
-                }
-            }
-            
-            Section("Units") {
-                Picker("Unit system:", selection: $settingsManager.userProfile.preferredUnits) {
-                    ForEach(UnitSystem.allCases, id: \.self) { unit in
-                        Text(unit.displayName).tag(unit)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Personal Information Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Personal Information")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Weight:")
+                                .frame(minWidth: 120, alignment: .leading)
+                            Spacer()
+                            TextField("Weight", value: $settingsManager.userProfile.weight.value, format: .number)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 80)
+                            Text(settingsManager.userProfile.weight.unit.symbol)
+                                .frame(width: 40, alignment: .leading)
+                        }
+                        
+                        HStack {
+                            Text("Stride length:")
+                                .frame(minWidth: 120, alignment: .leading)
+                            Spacer()
+                            TextField("Stride", value: $settingsManager.userProfile.strideLength.value, format: .number)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 80)
+                            Text(settingsManager.userProfile.strideLength.unit.symbol)
+                                .frame(width: 40, alignment: .leading)
+                        }
                     }
                 }
-                .pickerStyle(.menu)
+                
+                Divider()
+                
+                // Units Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Units")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    HStack {
+                        Text("Unit system:")
+                            .frame(minWidth: 120, alignment: .leading)
+                        Spacer()
+                        Picker("Unit system", selection: $settingsManager.userProfile.preferredUnits) {
+                            ForEach(UnitSystem.allCases, id: \.self) { unit in
+                                Text(unit.displayName).tag(unit)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(minWidth: 150, maxWidth: 200)
+                    }
+                }
+                
+                Divider()
+                
+                // Help Text
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Information")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    Text("Weight is used for calorie estimation. Stride length is used for step counting when not provided by the treadmill.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                Spacer()
             }
-            
-            Section {
-                Text("Weight is used for calorie estimation. Stride length is used for step counting when not provided by the treadmill.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding()
     }
 }
 
@@ -159,19 +222,39 @@ struct DisplaySettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
     
     var body: some View {
-        Form {
-            Section("Menu Bar Display") {
-                Toggle("Show current speed", isOn: $settingsManager.showSpeedInMenuBar)
-                Toggle("Show distance", isOn: $settingsManager.showDistanceInMenuBar)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Menu Bar Display Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Menu Bar Display")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle("Show current speed", isOn: $settingsManager.showSpeedInMenuBar)
+                        Toggle("Show distance", isOn: $settingsManager.showDistanceInMenuBar)
+                    }
+                }
+                
+                Divider()
+                
+                // Help Text
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Information")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    Text("Choose what information to display in the menu bar during workouts. Only one option can be active at a time.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                Spacer()
             }
-            
-            Section {
-                Text("Choose what information to display in the menu bar during workouts. Only one option can be active at a time.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding()
         .onChange(of: settingsManager.showSpeedInMenuBar) { newValue in
             if newValue {
                 settingsManager.showDistanceInMenuBar = false

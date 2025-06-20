@@ -212,23 +212,8 @@ struct MainMenuView: View {
     }
     
     private func openSettings() {
-        // Create and show settings window
-        let settingsView = SettingsView()
-        let hostingController = NSHostingController(rootView: settingsView)
-        
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
-            styleMask: [.titled, .closable, .resizable],
-            backing: .buffered,
-            defer: false
-        )
-        
-        window.contentViewController = hostingController
-        window.title = "BTreadmill Settings"
-        window.center()
-        window.makeKeyAndOrderFront(nil)
-        
-        // Activate the app to bring the window to front
-        NSApp.activate(ignoringOtherApps: true)
+        // Settings window is now properly managed by StatusBarController
+        // to prevent crashes and duplicate windows
+        NotificationCenter.default.post(name: NSNotification.Name("OpenSettings"), object: nil)
     }
 }
