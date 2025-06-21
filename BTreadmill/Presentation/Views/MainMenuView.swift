@@ -310,14 +310,12 @@ struct MainMenuView: View {
         }
     }
     
-    private func formatDistance(_ distance: Measurement<UnitLength>) -> String {
-        let converted = distance.converted(to: .kilometers)
-        return String(format: "%.2f km", converted.value)
+    private func formatDistance(_ distance: Double) -> String {
+        return String(format: "%.2f km", distance)
     }
     
-    private func formatSpeed(_ speed: Measurement<UnitSpeed>) -> String {
-        let converted = speed.converted(to: .kilometersPerHour)
-        return String(format: "%.1f km/h", converted.value)
+    private func formatSpeed(_ speed: Double) -> String {
+        return String(format: "%.1f km/h", speed)
     }
     
     private func formatPace(_ pace: TimeInterval) -> String {

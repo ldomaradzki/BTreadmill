@@ -106,9 +106,9 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
         
         let runningState = RunningState(
             timestamp: .now,
-            speed: Measurement(value: simulatedSpeed, unit: .kilometersPerHour),
-            distance: Measurement(value: currentDistance, unit: .kilometers),
-            strideLength: SettingsManager.shared.userProfile.strideLength
+            speed: simulatedSpeed,
+            distance: currentDistance,
+            strideLength: SettingsManager.shared.userProfile.strideLength.converted(to: .meters).value
         )
         
         stateSubject.send(.running(runningState))
@@ -123,9 +123,9 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
         if currentDistance > 0 {
             let finalState = RunningState(
                 timestamp: .now,
-                speed: Measurement(value: 0, unit: .kilometersPerHour),
-                distance: Measurement(value: currentDistance, unit: .kilometers),
-                strideLength: SettingsManager.shared.userProfile.strideLength
+                speed: 0,
+                distance: currentDistance,
+                strideLength: SettingsManager.shared.userProfile.strideLength.converted(to: .meters).value
             )
             stateSubject.send(.stopping(finalState))
         }

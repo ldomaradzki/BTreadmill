@@ -153,8 +153,7 @@ class WorkoutManager: ObservableObject {
         case .running(let runningState):
             // Track speed data for chart (only when not paused)
             if !workout.isPaused {
-                let speedKmh = runningState.speed.converted(to: .kilometersPerHour).value
-                workout.speedHistory.append(speedKmh)
+                workout.speedHistory.append(runningState.speed)
             }
             
             // Update workout with current treadmill data
@@ -170,8 +169,7 @@ class WorkoutManager: ObservableObject {
         case .stopping(let runningState):
             // Track final speed data if not paused
             if !workout.isPaused {
-                let speedKmh = runningState.speed.converted(to: .kilometersPerHour).value
-                workout.speedHistory.append(speedKmh)
+                workout.speedHistory.append(runningState.speed)
             }
             
             // Update workout with final state but don't auto-pause

@@ -119,9 +119,9 @@ class TreadmillService: TreadmillServiceProtocol {
         guard rawStream.count >= 13 else {
             logger.warning("Data packet too small for running state: \(rawStream)")
             return .init(timestamp: .now, 
-                        speed: Measurement(value: 0, unit: .kilometersPerHour), 
-                        distance: Measurement(value: 0, unit: .kilometers),
-                        strideLength: SettingsManager.shared.userProfile.strideLength)
+                        speed: 0, 
+                        distance: 0,
+                        strideLength: SettingsManager.shared.userProfile.strideLength.converted(to: .meters).value)
         }
         
         let doubleValues = rawStream.map { Double($0) }
@@ -129,11 +129,9 @@ class TreadmillService: TreadmillServiceProtocol {
         let distance = doubleValues[12] / 100.0
         let distanceOffset = (rawStream.count > 11) ? doubleValues[11] / 100.0 : 0.0
         
-        let speedMeasurement = Measurement<UnitSpeed>(value: currentSpeed, unit: .kilometersPerHour)
-        let distanceMeasurement = Measurement<UnitLength>(value: distance, unit: .kilometers) + 
-                                 Measurement<UnitLength>(value: distanceOffset * 256, unit: .kilometers)
+        let totalDistance = distance + (distanceOffset * 256)
         
         // Step count is calculated in the RunningState initializer based on distance and user's stride length
-        return .init(timestamp: .now, speed: speedMeasurement, distance: distanceMeasurement, strideLength: SettingsManager.shared.userProfile.strideLength)
+        return .init(timestamp: .now, speed: currentSpeed, distance: totalDistance, strideLength: SettingsManager.shared.userProfile.strideLength.converted(to: .meters).value)
     }
 }

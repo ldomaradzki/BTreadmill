@@ -146,8 +146,7 @@ class StatusBarController: NSObject {
         if let workout = workout, workout.isActive && !workout.isPaused {
             // Show timer and distance in format: "1h23m•6.7km"
             let timeText = formatWorkoutTime(workout.activeTime)
-            let distance = workout.totalDistance.converted(to: .kilometers)
-            let distanceText = String(format: "%.1fkm", distance.value)
+            let distanceText = String(format: "%.1fkm", workout.totalDistance)
             text = " \(timeText)•\(distanceText)"
         }
         

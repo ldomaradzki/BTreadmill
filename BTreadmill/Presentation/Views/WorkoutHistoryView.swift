@@ -16,10 +16,10 @@ struct WorkoutHistoryView: View {
     }
     
     // Daily statistics
-    private func dayStats(for workouts: [WorkoutSession]) -> (duration: TimeInterval, distance: Measurement<UnitLength>, calories: Int) {
+    private func dayStats(for workouts: [WorkoutSession]) -> (duration: TimeInterval, distance: Double, calories: Int) {
         let totalDuration = workouts.reduce(0) { $0 + $1.activeTime }
-        let totalDistance = workouts.reduce(Measurement(value: 0, unit: UnitLength.kilometers)) { result, workout in
-            Measurement(value: result.value + workout.totalDistance.converted(to: .kilometers).value, unit: .kilometers)
+        let totalDistance = workouts.reduce(0.0) { result, workout in
+            result + workout.totalDistance
         }
         let totalCalories = workouts.reduce(0) { $0 + $1.estimatedCalories }
         return (totalDuration, totalDistance, totalCalories)
@@ -270,19 +270,16 @@ struct WorkoutHistoryView: View {
         }
     }
     
-    private func formatDistance(_ distance: Measurement<UnitLength>) -> String {
-        let converted = distance.converted(to: .kilometers)
-        return String(format: "%.2f km", converted.value)
+    private func formatDistance(_ distance: Double) -> String {
+        return String(format: "%.2f km", distance)
     }
     
-    private func formatDistanceCompact(_ distance: Measurement<UnitLength>) -> String {
-        let converted = distance.converted(to: .kilometers)
-        return String(format: "%.1fkm", converted.value)
+    private func formatDistanceCompact(_ distance: Double) -> String {
+        return String(format: "%.1fkm", distance)
     }
     
-    private func formatSpeed(_ speed: Measurement<UnitSpeed>) -> String {
-        let converted = speed.converted(to: .kilometersPerHour)
-        return String(format: "%.1f km/h", converted.value)
+    private func formatSpeed(_ speed: Double) -> String {
+        return String(format: "%.1f km/h", speed)
     }
     
     private func formatPace(_ pace: TimeInterval) -> String {

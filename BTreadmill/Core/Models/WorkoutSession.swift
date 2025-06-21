@@ -1,32 +1,39 @@
 import Foundation
 
 struct WorkoutSession: Identifiable, Codable {
+    
+    private enum CodingKeys: String, CodingKey {
+        case id, startTime, endTime, totalDistance, totalTime, averageSpeed, maxSpeed
+        case averagePace, totalSteps, estimatedCalories, isDemo, actualStartDate, actualEndDate
+        case currentSpeed, speedHistory
+    }
     let id: UUID
     let startTime: Date
     var endTime: Date?
-    var totalDistance: Measurement<UnitLength>
+    var totalDistance: Double // kilometers
     var totalTime: TimeInterval
-    var averageSpeed: Measurement<UnitSpeed>
-    var maxSpeed: Measurement<UnitSpeed>
+    var averageSpeed: Double // km/h
+    var maxSpeed: Double // km/h
     var averagePace: TimeInterval // minutes per kilometer
     var totalSteps: Int
     var estimatedCalories: Int
-    var isPaused: Bool
-    var pausedDuration: TimeInterval
+    // Non-serialized runtime state
+    var isPaused: Bool = false
+    var pausedDuration: TimeInterval = 0
     var isDemo: Bool
     
     // Actual session timing (wall-clock time including pauses)
     var actualStartDate: Date
     var actualEndDate: Date?
     
-    // Values before pause (for accumulation after resume)
-    var distanceBeforePause: Measurement<UnitLength>
-    var stepsBeforePause: Int
-    var caloriesBeforePause: Int
+    // Non-serialized values before pause (for accumulation after resume)
+    var distanceBeforePause: Double = 0 // kilometers
+    var stepsBeforePause: Int = 0
+    var caloriesBeforePause: Int = 0
     
     // Current workout state (for active sessions)
-    var currentSpeed: Measurement<UnitSpeed>
-    var lastUpdateTime: Date
+    var currentSpeed: Double = 0 // km/h
+    var lastUpdateTime: Date = Date()
     
     // Speed tracking for charts (speed values at each treadmill update)
     var speedHistory: [Double]
@@ -35,23 +42,16 @@ struct WorkoutSession: Identifiable, Codable {
         self.id = id
         self.startTime = startTime
         self.endTime = nil
-        self.totalDistance = Measurement(value: 0, unit: .kilometers)
+        self.totalDistance = 0
         self.totalTime = 0
-        self.averageSpeed = Measurement(value: 0, unit: .kilometersPerHour)
-        self.maxSpeed = Measurement(value: 0, unit: .kilometersPerHour)
+        self.averageSpeed = 0
+        self.maxSpeed = 0
         self.averagePace = 0
         self.totalSteps = 0
         self.estimatedCalories = 0
-        self.isPaused = false
-        self.pausedDuration = 0
         self.isDemo = isDemo
         self.actualStartDate = startTime
         self.actualEndDate = nil
-        self.distanceBeforePause = Measurement(value: 0, unit: .kilometers)
-        self.stepsBeforePause = 0
-        self.caloriesBeforePause = 0
-        self.currentSpeed = Measurement(value: 0, unit: .kilometersPerHour)
-        self.lastUpdateTime = startTime
         self.speedHistory = []
     }
     
@@ -79,12 +79,12 @@ struct WorkoutSession: Identifiable, Codable {
             totalTime += adjustedTimeDelta
             
             // Update distance (accumulate with pre-pause values)
-            totalDistance = Measurement(value: distanceBeforePause.value + runningState.distance.converted(to: distanceBeforePause.unit).value, unit: distanceBeforePause.unit)
+            totalDistance = distanceBeforePause + runningState.distance
             
             // Update speed tracking
             currentSpeed = runningState.speed
-            if runningState.speed.value > maxSpeed.value {
-                maxSpeed = runningState.speed
+            if currentSpeed > maxSpeed {
+                maxSpeed = currentSpeed
             }
             
             // Update steps (accumulate with pre-pause values)
@@ -92,12 +92,11 @@ struct WorkoutSession: Identifiable, Codable {
             
             // Calculate average speed (excluding paused time)
             if activeTime > 0 {
-                let avgSpeedValue = totalDistance.converted(to: .kilometers).value / (activeTime / 3600.0)
-                averageSpeed = Measurement(value: avgSpeedValue, unit: .kilometersPerHour)
+                averageSpeed = totalDistance / (activeTime / 3600.0)
                 
                 // Calculate average pace (minutes per kilometer)
-                if totalDistance.converted(to: .kilometers).value > 0 {
-                    averagePace = (activeTime / 60.0) / totalDistance.converted(to: .kilometers).value
+                if totalDistance > 0 {
+                    averagePace = (activeTime / 60.0) / totalDistance
                 }
             }
             
@@ -133,8 +132,7 @@ struct WorkoutSession: Identifiable, Codable {
         // Basic calorie calculation: ~0.75 calories per kg per km
         // This will be improved when user weight is available from settings
         let defaultWeight: Double = 70 // kg - default weight
-        let distanceKm = totalDistance.converted(to: .kilometers).value
-        let calories = distanceKm * defaultWeight * 0.75
+        let calories = totalDistance * defaultWeight * 0.75
         return Int(calories)
     }
 }
