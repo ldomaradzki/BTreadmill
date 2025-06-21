@@ -62,7 +62,6 @@ class WorkoutManager: ObservableObject {
         NotificationCenter.default.publisher(for: .treadmillServiceReset)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.logger.info("Treadmill service reset, re-subscribing")
                 self?.setupSubscriptions()
             }
             .store(in: &bag)
@@ -81,7 +80,6 @@ class WorkoutManager: ObservableObject {
         currentWorkout = WorkoutSession(isDemo: isDemo)
         isWorkoutActive = true
         
-        logger.info("Started new workout session: \(self.currentWorkout?.id.uuidString ?? "unknown") - Demo: \(isDemo)")
         
         // Send start command to treadmill
         treadmillService.sendCommand(.start)
@@ -96,7 +94,6 @@ class WorkoutManager: ObservableObject {
         workout.pause()
         currentWorkout = workout
         
-        logger.info("Paused workout session")
         
         // Stop the treadmill
         treadmillService.sendCommand(.stop)
@@ -111,7 +108,6 @@ class WorkoutManager: ObservableObject {
         workout.resume()
         currentWorkout = workout
         
-        logger.info("Resumed workout session")
         
         // Start the treadmill again (it will resume from speed 0)
         treadmillService.sendCommand(.start)
@@ -126,7 +122,6 @@ class WorkoutManager: ObservableObject {
         workout.end()
         isWorkoutActive = false
         
-        logger.info("Ended workout session - Distance: \(workout.totalDistance.value) km, Time: \(workout.activeTime) seconds")
         
         // Save the completed workout
         saveWorkout(workout)
@@ -147,7 +142,6 @@ class WorkoutManager: ObservableObject {
         let clampedSpeed = speed.clamped(to: 1.0, and: 6.0)
         treadmillService.sendCommand(.speed(clampedSpeed))
         
-        logger.info("Set treadmill speed to \(clampedSpeed) km/h")
     }
     
     // MARK: - Private Methods
@@ -202,7 +196,6 @@ class WorkoutManager: ObservableObject {
         // Update local in-memory copy to stay in sync
         workoutHistory.insert(workout, at: 0)
         
-        logger.info("Saving workout: \(workout.id) - \(workout.totalDistance.value) km in \(workout.activeTime) seconds - Demo: \(workout.isDemo)")
     }
     
     // MARK: - Workout History
@@ -211,7 +204,6 @@ class WorkoutManager: ObservableObject {
         // Ensure SettingsManager is fully initialized before accessing workout history
         DispatchQueue.main.async { [weak self] in
             self?.workoutHistory = SettingsManager.shared.workoutHistory
-            self?.logger.info("Loaded \(self?.workoutHistory.count ?? 0) workouts into WorkoutManager")
         }
     }
     
@@ -223,6 +215,5 @@ class WorkoutManager: ObservableObject {
     func deleteWorkout(id: UUID) {
         SettingsManager.shared.deleteWorkout(id: id)
         workoutHistory.removeAll { $0.id == id }
-        logger.info("Deleted workout: \(id)")
     }
 }

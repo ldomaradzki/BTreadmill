@@ -108,7 +108,6 @@ extension BluetoothService: CBCentralManagerDelegate, CBPeripheralDelegate {
         } else {
             // TODO: Maybe it's better to provide `service` instead of scanning everything around
             central.scanForPeripherals(withServices: nil, options: nil)
-            logger.warning("Did not find peripheral: \(BluetoothService.treadmillName)")
         }
     }
     
@@ -160,7 +159,6 @@ extension BluetoothService: CBCentralManagerDelegate, CBPeripheralDelegate {
         }
         
         guard let data = characteristic.value else {
-            logger.warning("Received update with no data")
             return
         }
         

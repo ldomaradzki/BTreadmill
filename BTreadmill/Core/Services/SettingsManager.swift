@@ -13,7 +13,6 @@ class SettingsManager: ObservableObject {
             if oldValue.simulatorMode != userProfile.simulatorMode {
                 // Reset the shared treadmill service to use the new mode
                 TreadmillService.resetShared()
-                logger.info("Simulator mode changed to \(self.userProfile.simulatorMode), reset treadmill service")
             }
             saveConfig()
         }
@@ -25,16 +24,13 @@ class SettingsManager: ObservableObject {
         // Load config from new multi-file structure
         if let loadedProfile = dataManager.loadConfig() {
             self.userProfile = loadedProfile
-            logger.info("Loaded user profile from config file")
         } else {
             // No existing config, start with defaults
             self.userProfile = UserProfile()
-            logger.info("Starting with default user profile")
         }
         
         // Load workout history from individual files
         self.workoutHistory = dataManager.loadAllWorkouts()
-        logger.info("Loaded \(self.workoutHistory.count) workouts from individual files")
     }
     
     private func saveConfig() {
@@ -51,7 +47,6 @@ class SettingsManager: ObservableObject {
         do {
             try dataManager.saveWorkout(workout)
             workoutHistory.insert(workout, at: 0) // Insert at beginning for newest-first order
-            logger.info("Added workout: \(workout.id) - Demo: \(workout.isDemo)")
         } catch {
             logger.error("Failed to save workout \(workout.id): \(error.localizedDescription)")
         }
@@ -61,7 +56,6 @@ class SettingsManager: ObservableObject {
         do {
             try dataManager.deleteWorkout(id: id)
             workoutHistory.removeAll { $0.id == id }
-            logger.info("Deleted workout: \(id)")
         } catch {
             logger.error("Failed to delete workout \(id): \(error.localizedDescription)")
         }
@@ -87,7 +81,6 @@ class SettingsManager: ObservableObject {
         // Reload workout history from files to ensure consistency
         self.workoutHistory = dataManager.loadAllWorkouts()
         
-        logger.info("Successfully imported data with \(importedWorkouts.count) workouts")
     }
     
     // MARK: - Data Info

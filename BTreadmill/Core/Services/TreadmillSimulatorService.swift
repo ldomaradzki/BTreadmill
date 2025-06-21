@@ -27,7 +27,6 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
     }
     
     init() {
-        logger.info("TreadmillSimulatorService initialized")
         // Start in connected state
         isConnectedSubject.send(true)
     }
@@ -37,7 +36,6 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
     }
     
     func sendCommand(_ command: TreadmillCommand) {
-        logger.info("Simulator received command: \(command.debugDescription)")
         
         switch command {
         case .start:
@@ -52,7 +50,6 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
     private func startSimulation() {
         guard !isRunning else { return }
         
-        logger.info("Starting treadmill simulation")
         isRunning = true
         currentSpeed = SettingsManager.shared.userProfile.defaultSpeed
         
@@ -68,16 +65,13 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
     private func beginRunningSimulation() {
         guard isRunning else { return }
         
-        logger.info("beginRunningSimulation - creating timer with interval: \(self.simulationUpdateInterval)")
         
         // Start the simulation timer on the main run loop
         simulationTimer = Timer.scheduledTimer(withTimeInterval: simulationUpdateInterval, repeats: true) { [weak self] _ in
-            self?.logger.info("Timer fired!")
             self?.updateSimulation()
         }
         RunLoop.main.add(simulationTimer!, forMode: .common)
         
-        logger.info("Timer created and added to run loop")
         
         // Send initial running state
         updateSimulation()
@@ -87,7 +81,6 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
         guard isRunning else { return }
         
         currentSpeed = newSpeed
-        logger.info("Simulator speed updated to: \(newSpeed) km/h")
         
         // Update state immediately
         updateSimulation()
@@ -99,7 +92,6 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
             return 
         }
         
-        logger.info("updateSimulation called - currentSpeed: \(self.currentSpeed), currentDistance: \(self.currentDistance)")
         
         // Simulate distance progression with acceleration for demo purposes
         // Normal: Distance increment = (speed in km/h) * (time interval in hours)
@@ -119,16 +111,13 @@ class TreadmillSimulatorService: TreadmillServiceProtocol {
             strideLength: SettingsManager.shared.userProfile.strideLength
         )
         
-        logger.info("Sending running state - Speed: \(simulatedSpeed) km/h, Distance: \(self.currentDistance) km, Steps: \(runningState.steps)")
         stateSubject.send(.running(runningState))
         
-        logger.debug("Simulation update - Speed: \(simulatedSpeed) km/h, Distance: \(self.currentDistance) km, Steps: \(runningState.steps)")
     }
     
     private func stopSimulation() {
         guard isRunning else { return }
         
-        logger.info("Stopping treadmill simulation")
         
         // Send stopping state with final metrics
         if currentDistance > 0 {

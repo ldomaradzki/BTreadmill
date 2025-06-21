@@ -14,8 +14,6 @@ enum TreadmillCommand: CustomDebugStringConvertible {
             let roundedValue = (value * 10).rounded() / 10
             let speed = Int(roundedValue.clamped(to: 1.0, and: 6.0) * 10)
             
-            // For debugging
-            print("Setting speed: requested=\(value), rounded=\(roundedValue), hex=\(speed.toHex())")
             
             let checksum = 171 + speed
             let hexString = "FB07A10201\(speed.toHex())00\(checksum.toHex())FC"

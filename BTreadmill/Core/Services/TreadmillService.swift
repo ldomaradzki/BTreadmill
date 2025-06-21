@@ -20,7 +20,7 @@ class TreadmillServiceMock: TreadmillServiceProtocol {
     }
     
     func sendCommand(_ command: TreadmillCommand) {
-        debugPrint(command)
+        // Command ignored in mock
     }
 }
 
@@ -91,10 +91,8 @@ class TreadmillService: TreadmillServiceProtocol {
     private func parseState(_ rawStream: [Int]) -> TreadmillState {
         if rawStream.count < 18 {
             if rawStream.count > 1 && rawStream[1] == 4 {
-                logger.debug("Treadmill state: hibernated")
                 return .hibernated
             }
-            logger.debug("Treadmill state: idling")
             return .idling
         }
         
@@ -105,19 +103,15 @@ class TreadmillService: TreadmillServiceProtocol {
         
         switch rawStream[3] {
             case 1:
-                logger.debug("Treadmill state: starting")
                 return .starting
             case 2:
                 let runningState = self.parseRunningState(rawStream)
-                logger.debug("Treadmill state: running \(runningState.distance.debugDescription) \(runningState.speed.debugDescription)")
                 return .running(runningState)
             case 4, 5:
                 let runningState = self.parseRunningState(rawStream)
-                logger.debug("Treadmill state: stopping \(runningState.distance.debugDescription) \(runningState.speed.debugDescription)")
                 return .stopping(runningState)
             default:
-                logger.debug("Treadmill state: idling")
-                return .idling
+                    return .idling
         }
     }
     

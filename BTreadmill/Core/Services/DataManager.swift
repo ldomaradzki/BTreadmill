@@ -27,7 +27,6 @@ class DataManager {
         workoutsFolderURL = dataFolderURL.appendingPathComponent(workoutsFolderName)
         legacyDataFileURL = documentsDirectory.appendingPathComponent(legacyDataFileName)
         
-        logger.info("Data folder location: \(self.dataFolderURL.path)")
         
         // Create directories if they don't exist
         createDirectoriesIfNeeded()
@@ -40,7 +39,6 @@ class DataManager {
         do {
             try FileManager.default.createDirectory(at: dataFolderURL, withIntermediateDirectories: true)
             try FileManager.default.createDirectory(at: workoutsFolderURL, withIntermediateDirectories: true)
-            logger.info("Created data directories")
         } catch {
             logger.error("Failed to create data directories: \(error.localizedDescription)")
         }
@@ -54,7 +52,6 @@ class DataManager {
             return // No legacy file or already migrated
         }
         
-        logger.info("Migrating legacy data format...")
         
         do {
             let data = try Data(contentsOf: legacyDataFileURL)
@@ -70,7 +67,6 @@ class DataManager {
                 try saveWorkout(workout)
             }
             
-            logger.info("Successfully migrated \(legacyAppData.workoutHistory.count) workouts from legacy format")
             
             // Archive the old file
             let archivedURL = legacyDataFileURL.appendingPathExtension("archived")
@@ -85,7 +81,6 @@ class DataManager {
     
     func loadConfig() -> UserProfile? {
         guard FileManager.default.fileExists(atPath: configFileURL.path) else {
-            logger.info("No existing config file found")
             return nil
         }
         
@@ -94,7 +89,6 @@ class DataManager {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
             let configFile = try decoder.decode(ConfigFile.self, from: data)
-            logger.info("Successfully loaded config (version \(configFile.version))")
             return configFile.userProfile
         } catch {
             logger.error("Failed to load config: \(error.localizedDescription)")
@@ -112,7 +106,6 @@ class DataManager {
             let data = try encoder.encode(configFile)
             try data.write(to: configFileURL)
             
-            logger.info("Successfully saved config")
         } catch {
             logger.error("Failed to save config: \(error.localizedDescription)")
             throw ConfigDataError.fileAccessError(error.localizedDescription)
@@ -152,7 +145,6 @@ class DataManager {
             let data = try encoder.encode(workoutFile)
             try data.write(to: workoutFileURL)
             
-            logger.info("Successfully saved workout: \(workout.id) as \(fileName)")
         } catch {
             logger.error("Failed to save workout \(workout.id): \(error.localizedDescription)")
             throw WorkoutDataError.fileAccessError(error.localizedDescription)
@@ -169,7 +161,6 @@ class DataManager {
         
         do {
             try FileManager.default.removeItem(at: workoutFileURL)
-            logger.info("Successfully deleted workout: \(id) (file: \(fileName))")
         } catch {
             logger.error("Failed to delete workout \(id): \(error.localizedDescription)")
             throw WorkoutDataError.fileAccessError(error.localizedDescription)
@@ -190,7 +181,6 @@ class DataManager {
                 workouts.append(workoutFile.workout)
             }
             
-            logger.info("Successfully loaded \(workouts.count) workouts")
         } catch {
             logger.error("Failed to load workouts: \(error.localizedDescription)")
         }
@@ -259,7 +249,6 @@ class DataManager {
         let data = try encoder.encode(appData)
         try data.write(to: url)
         
-        logger.info("Successfully exported legacy data to: \(url.path)")
     }
     
     func importDataLegacy(from url: URL) throws -> (UserProfile, [WorkoutSession]) {
@@ -273,7 +262,6 @@ class DataManager {
             decoder.dateDecodingStrategy = .iso8601
             
             let appData = try decoder.decode(AppData.self, from: data)
-            logger.info("Successfully imported legacy data (version \(appData.version)) with \(appData.workoutHistory.count) workouts from: \(url.path)")
             
             return (appData.userProfile, appData.workoutHistory)
         } catch DecodingError.dataCorrupted(_) {
