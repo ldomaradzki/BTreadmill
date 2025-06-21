@@ -210,6 +210,7 @@ struct WorkoutHistoryView: View {
                 showTitle: false
             )
             .padding(.top, 8)
+            .padding(.bottom, 8)
             
             // Show session duration if different from active time (i.e., there were pauses)
             if workout.actualSessionDuration > workout.activeTime + 60 { // 1 minute threshold
