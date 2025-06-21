@@ -76,8 +76,9 @@ struct WorkoutHistoryView: View {
     
     private var emptyStateView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "figure.walk.circle")
-                .font(.system(size: 60))
+            Image("treadmill")
+                .resizable()
+                .frame(width: 60, height: 60)
                 .foregroundColor(.secondary)
             
             Text("No Workout History")
@@ -123,7 +124,12 @@ struct WorkoutHistoryView: View {
                     
                     HStack(spacing: 12) {
                         Label(formatTimeCompact(stats.duration), systemImage: "clock")
-                        Label(formatDistanceCompact(stats.distance), systemImage: "figure.walk")
+                        HStack(spacing: 4) {
+                            Image("treadmill")
+                                .resizable()
+                                .frame(width: 12, height: 12)
+                            Text(formatDistanceCompact(stats.distance))
+                        }
                         Label("\(stats.calories) cal", systemImage: "flame")
                     }
                     .font(.caption)

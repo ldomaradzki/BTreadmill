@@ -7,6 +7,7 @@ struct SettingsView: View {
     @State private var showingImportFileDialog = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
+    @State private var showingStrideTooltip = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -80,8 +81,21 @@ struct SettingsView: View {
                         }
                         
                         HStack {
-                            Text("Stride length:")
-                                .frame(minWidth: 120, alignment: .leading)
+                            HStack(spacing: 4) {
+                                Text("Stride length:")
+                                Button(action: {
+                                    showingStrideTooltip.toggle()
+                                }) {
+                                    Image(systemName: "info.circle")
+                                        .foregroundColor(.secondary)
+                                        .font(.caption)
+                                }
+                                .buttonStyle(.plain)
+                                .popover(isPresented: $showingStrideTooltip, arrowEdge: .bottom) {
+                                    strideCalculationTooltip
+                                }
+                            }
+                            .frame(minWidth: 120, alignment: .leading)
                             Spacer()
                             TextField("Stride", value: $settingsManager.userProfile.strideLength.value, format: .number)
                                 .textFieldStyle(.roundedBorder)
@@ -155,30 +169,6 @@ struct SettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 
-                Divider()
-                
-                // Stride Length Calculation Guide
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("How to Calculate Your Stride Length")
-                        .font(.headline)
-                        .padding(.bottom, 4)
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("1. Start a 1-minute workout at 4.0 km/h (comfortable walking pace)")
-                            .font(.caption)
-                        Text("2. Note the number of steps shown after 1 minute")
-                            .font(.caption)
-                        Text("3. Calculate: Distance = 4.0 km/h ÷ 60 min = 66.7 meters per minute")
-                            .font(.caption)
-                        Text("4. Stride length = 66.7 meters ÷ number of steps")
-                            .font(.caption)
-                        Text("5. Example: 66.7m ÷ 80 steps = 0.83m stride length")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                    }
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                }
                 
                     Spacer()
                 }
@@ -208,6 +198,31 @@ struct SettingsView: View {
         } message: {
             Text(alertMessage)
         }
+    }
+    
+    private var strideCalculationTooltip: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("How to Calculate Your Stride Length")
+                .font(.headline)
+                .padding(.bottom, 4)
+            
+            VStack(alignment: .leading, spacing: 6) {
+                Text("1. Start a 1-minute workout at 4.0 km/h (comfortable walking pace)")
+                    .font(.caption)
+                Text("2. Note the number of steps shown after 1 minute")
+                    .font(.caption)
+                Text("3. Calculate: Distance = 4.0 km/h ÷ 60 min = 66.7 meters per minute")
+                    .font(.caption)
+                Text("4. Stride length = 66.7 meters ÷ number of steps")
+                    .font(.caption)
+                Text("5. Example: 66.7m ÷ 80 steps = 0.83m stride length")
+                    .font(.caption)
+                    .fontWeight(.medium)
+            }
+            .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: 300)
     }
     
     private var headerView: some View {

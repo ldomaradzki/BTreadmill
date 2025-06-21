@@ -72,8 +72,9 @@ struct MainMenuView: View {
                 .fill(isTreadmillReady ? Color.green : Color.red)
                 .frame(width: 8, height: 8)
             
-            Image(systemName: "figure.walk")
-                .font(.title2)
+            Image("treadmill")
+                .resizable()
+                .frame(width: 20, height: 20)
                 .foregroundColor(.primary)
             
             Text("BTreadmill")

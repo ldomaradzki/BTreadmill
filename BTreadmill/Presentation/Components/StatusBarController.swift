@@ -32,11 +32,13 @@ class StatusBarController: NSObject {
         
         // Try multiple icon options in order of preference
         if let image = NSImage(named: "StatusBarIcon") {
-            // Custom icon from assets
+            // Custom icon from assets - resize for menu bar
+            image.size = NSSize(width: 18, height: 18)
             button.image = image
             button.image?.isTemplate = true
-        } else if let image = NSImage(systemSymbolName: "figure.walk", accessibilityDescription: "BTreadmill") {
-            // SF Symbol
+        } else if let image = NSImage(named: "treadmill") {
+            // Treadmill vector image fallback
+            image.size = NSSize(width: 18, height: 18)
             button.image = image
             button.image?.isTemplate = true
         } else if let image = NSImage(named: NSImage.userAccountsName) {
@@ -114,12 +116,14 @@ class StatusBarController: NSObject {
         
         // Always show the walk icon
         if let image = NSImage(named: "StatusBarIcon") {
-            // Custom icon
+            // Custom icon - resize for menu bar
+            image.size = NSSize(width: 18, height: 18)
             button.image = image
             button.image?.isTemplate = true
             button.alphaValue = 1.0
-        } else if let image = NSImage(systemSymbolName: "figure.walk", accessibilityDescription: "BTreadmill") {
-            // SF Symbol - always use walk icon
+        } else if let image = NSImage(named: "treadmill") {
+            // Treadmill vector image fallback
+            image.size = NSSize(width: 18, height: 18)
             button.image = image
             button.image?.isTemplate = true
             button.alphaValue = 1.0
