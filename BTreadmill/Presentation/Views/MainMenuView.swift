@@ -261,6 +261,14 @@ struct MainMenuView: View {
                     workoutStatView(title: "Steps", value: "\(workout.totalSteps)")
                 }
                 
+                // Speed Chart
+                SpeedChartView(
+                    speedData: workout.speedHistory,
+                    height: 60,
+                    showTitle: false
+                )
+                .padding(.top, 8)
+                
                 if workout.isPaused {
                     Text("Workout Paused")
                         .font(.caption)

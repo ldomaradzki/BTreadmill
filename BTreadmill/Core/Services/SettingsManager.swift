@@ -15,75 +15,88 @@ class SettingsManager: ObservableObject {
                 TreadmillService.resetShared()
                 logger.info("Simulator mode changed to \(self.userProfile.simulatorMode), reset treadmill service")
             }
-            saveData()
+            saveConfig()
         }
     }
     
-    @Published var workoutHistory: [WorkoutSession] = [] {
-        didSet {
-            saveData()
-        }
-    }
+    @Published var workoutHistory: [WorkoutSession] = []
     
     private init() {
-        // Load data from JSON file
-        if let appData = dataManager.loadData() {
-            self.userProfile = appData.userProfile
-            self.workoutHistory = appData.workoutHistory
-            logger.info("Loaded \(self.workoutHistory.count) workouts from data file")
+        // Load config from new multi-file structure
+        if let loadedProfile = dataManager.loadConfig() {
+            self.userProfile = loadedProfile
+            logger.info("Loaded user profile from config file")
         } else {
-            // No existing data, start with defaults
+            // No existing config, start with defaults
             self.userProfile = UserProfile()
-            self.workoutHistory = []
-            logger.info("Starting with default user profile and empty workout history")
+            logger.info("Starting with default user profile")
         }
+        
+        // Load workout history from individual files
+        self.workoutHistory = dataManager.loadAllWorkouts()
+        logger.info("Loaded \(self.workoutHistory.count) workouts from individual files")
     }
     
-    private func saveData() {
-        let appData = AppData(userProfile: userProfile, workoutHistory: workoutHistory)
+    private func saveConfig() {
         do {
-            try dataManager.saveData(appData)
+            try dataManager.saveConfig(userProfile)
         } catch {
-            logger.error("Failed to save data: \(error.localizedDescription)")
+            logger.error("Failed to save config: \(error.localizedDescription)")
         }
     }
     
     // MARK: - Workout Management
     
     func addWorkout(_ workout: WorkoutSession) {
-        workoutHistory.insert(workout, at: 0) // Insert at beginning for newest-first order
-        logger.info("Added workout: \(workout.id) - Demo: \(workout.isDemo)")
+        do {
+            try dataManager.saveWorkout(workout)
+            workoutHistory.insert(workout, at: 0) // Insert at beginning for newest-first order
+            logger.info("Added workout: \(workout.id) - Demo: \(workout.isDemo)")
+        } catch {
+            logger.error("Failed to save workout \(workout.id): \(error.localizedDescription)")
+        }
     }
     
     func deleteWorkout(id: UUID) {
-        workoutHistory.removeAll { $0.id == id }
-        logger.info("Deleted workout: \(id)")
+        do {
+            try dataManager.deleteWorkout(id: id)
+            workoutHistory.removeAll { $0.id == id }
+            logger.info("Deleted workout: \(id)")
+        } catch {
+            logger.error("Failed to delete workout \(id): \(error.localizedDescription)")
+        }
     }
     
-    // MARK: - Import/Export
+    // MARK: - Import/Export (Legacy format support)
     
     func exportData(to url: URL) throws {
-        let appData = AppData(userProfile: userProfile, workoutHistory: workoutHistory)
-        try dataManager.exportData(to: url, appData: appData)
+        try dataManager.exportDataLegacy(to: url, userProfile: userProfile, workouts: workoutHistory)
     }
     
     func importData(from url: URL) throws {
-        let appData = try dataManager.importData(from: url)
+        let (importedProfile, importedWorkouts) = try dataManager.importDataLegacy(from: url)
         
-        // Update the published properties (this will trigger UI updates and auto-save)
-        self.userProfile = appData.userProfile
-        self.workoutHistory = appData.workoutHistory
+        // Save imported config
+        self.userProfile = importedProfile
         
-        logger.info("Successfully imported data with \(self.workoutHistory.count) workouts")
+        // Save imported workouts individually and update local history
+        for workout in importedWorkouts {
+            try dataManager.saveWorkout(workout)
+        }
+        
+        // Reload workout history from files to ensure consistency
+        self.workoutHistory = dataManager.loadAllWorkouts()
+        
+        logger.info("Successfully imported data with \(importedWorkouts.count) workouts")
     }
     
     // MARK: - Data Info
     
-    func getDataFileInfo() -> (exists: Bool, size: String?, path: String) {
-        let exists = dataManager.dataFileExists()
+    func getDataFileInfo() -> (exists: Bool, size: String?, path: String, workoutCount: Int) {
+        let exists = dataManager.dataFolderExists()
         let sizeString: String?
         
-        if let size = dataManager.getDataFileSize() {
+        if let size = dataManager.getDataFolderSize() {
             let formatter = ByteCountFormatter()
             formatter.allowedUnits = [.useKB, .useMB]
             formatter.countStyle = .file
@@ -92,6 +105,8 @@ class SettingsManager: ObservableObject {
             sizeString = nil
         }
         
-        return (exists: exists, size: sizeString, path: dataManager.getDataFileURL().path)
+        let workoutCount = dataManager.getWorkoutCount()
+        
+        return (exists: exists, size: sizeString, path: dataManager.getDataFolderURL().path, workoutCount: workoutCount)
     }
 }

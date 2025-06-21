@@ -119,9 +119,13 @@ struct SettingsView: View {
                         
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Data file: \(dataInfo.exists ? "Found" : "Not found")")
+                                Text("Data folder: \(dataInfo.exists ? "Found" : "Not found")")
                                     .font(.caption)
                                     .foregroundColor(dataInfo.exists ? .primary : .secondary)
+                                
+                                Text("Workouts: \(dataInfo.workoutCount)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
                                 
                                 if let size = dataInfo.size {
                                     Text("Size: \(size)")

@@ -203,6 +203,14 @@ struct WorkoutHistoryView: View {
                 statView(title: "Pace", value: formatPace(workout.averagePace))
             }
             
+            // Speed Chart
+            SpeedChartView(
+                speedData: workout.speedHistory,
+                height: 50,
+                showTitle: false
+            )
+            .padding(.top, 8)
+            
             // Show session duration if different from active time (i.e., there were pauses)
             if workout.actualSessionDuration > workout.activeTime + 60 { // 1 minute threshold
                 HStack {

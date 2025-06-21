@@ -28,6 +28,9 @@ struct WorkoutSession: Identifiable, Codable {
     var currentSpeed: Measurement<UnitSpeed>
     var lastUpdateTime: Date
     
+    // Speed tracking for charts (speed values at each treadmill update)
+    var speedHistory: [Double]
+    
     init(id: UUID = UUID(), startTime: Date = Date(), isDemo: Bool = false) {
         self.id = id
         self.startTime = startTime
@@ -49,6 +52,7 @@ struct WorkoutSession: Identifiable, Codable {
         self.caloriesBeforePause = 0
         self.currentSpeed = Measurement(value: 0, unit: .kilometersPerHour)
         self.lastUpdateTime = startTime
+        self.speedHistory = []
     }
     
     var isActive: Bool {

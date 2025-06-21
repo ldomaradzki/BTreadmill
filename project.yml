@@ -40,3 +40,4 @@ targets:
     dependencies:
       - sdk: CoreBluetooth.framework
       - sdk: CoreData.framework
+      - sdk: Charts.framework
