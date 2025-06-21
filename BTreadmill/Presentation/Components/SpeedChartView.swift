@@ -83,6 +83,8 @@ struct SpeedChartView: View {
                     }
                 }
                 .frame(height: height)
+                .padding(.leading, 4) // Add padding for Y-axis labels
+                .padding(.bottom, 4) // Add padding for bottom labels
                 .background(Color(.controlBackgroundColor).opacity(0.3))
                 .cornerRadius(6)
             }
