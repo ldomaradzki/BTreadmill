@@ -206,7 +206,8 @@ class DataManager {
         formatter.timeZone = TimeZone.current
         
         let baseName = formatter.string(from: workout.actualStartDate)
-        let fileName = "\(baseName).json"
+        let suffix = workout.isDemo ? "-demo.json" : ".json"
+        let fileName = "\(baseName)\(suffix)"
         
         // Check if file already exists and append counter if needed
         let baseURL = workoutsFolderURL.appendingPathComponent(fileName)
@@ -217,7 +218,7 @@ class DataManager {
         // File exists, append counter
         var counter = 1
         while true {
-            let numberedFileName = "\(baseName)_\(counter).json"
+            let numberedFileName = workout.isDemo ? "\(baseName)_\(counter)-demo.json" : "\(baseName)_\(counter).json"
             let numberedURL = workoutsFolderURL.appendingPathComponent(numberedFileName)
             if !FileManager.default.fileExists(atPath: numberedURL.path) {
                 return numberedFileName
