@@ -36,10 +36,11 @@ struct MainMenuView: View {
             // Treadmill Controls (always visible)
             treadmillControlsView
             
-            Divider()
-            
-            // Current Workout Display
-            currentWorkoutView
+            // Current Workout Display (only show when workout is active)
+            if workoutManager.currentWorkout != nil {
+                Divider()
+                currentWorkoutView
+            }
         }
         .frame(width: 300)
         .fixedSize(horizontal: false, vertical: true)
@@ -273,10 +274,6 @@ struct MainMenuView: View {
                         .foregroundColor(.orange)
                         .padding(.top, 4)
                 }
-            } else {
-                Text("No active workout")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
         }
         .padding(.horizontal, 16)
