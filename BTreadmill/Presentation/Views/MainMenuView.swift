@@ -3,52 +3,75 @@ import AppKit
 import Combine
 
 struct MainMenuView: View {
-    let treadmillService: TreadmillServiceProtocol
     @ObservedObject var workoutManager: WorkoutManager
     @ObservedObject var settingsManager: SettingsManager
+    
+    private var treadmillService: TreadmillServiceProtocol {
+        return TreadmillService.shared
+    }
     
     @State private var isConnected: Bool = false
     @State private var treadmillState: TreadmillState = .unknown
     @State private var currentSpeed: Double = 1.0
+    @State private var showingWorkoutHistory = false
+    @State private var showingSettings = false
+    
+    // Computed property to determine if treadmill controls should be enabled
+    private var isTreadmillReady: Bool {
+        // In simulator mode, always consider ready when simulator is enabled
+        if settingsManager.userProfile.simulatorMode {
+            return true
+        }
+        // Otherwise use actual connection status and ensure not hibernated
+        return isConnected && treadmillState != .hibernated
+    }
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+            // Header with connection status and action buttons
             headerView
             
             Divider()
             
-            // Connection Status
-            connectionStatusView
+            // Treadmill Controls (always visible)
+            treadmillControlsView
             
             Divider()
             
-            // Treadmill Controls
-            if isConnected {
-                treadmillControlsView
-                
-                Divider()
-                
-                // Current Workout Display
-                currentWorkoutView
-                
-                Divider()
-            }
+            // Current Workout Display
+            currentWorkoutView
             
-            // Navigation
-            navigationView
+            Spacer(minLength: 0)
         }
-        .frame(width: 300, height: isConnected ? 450 : 200)
+        .frame(width: 300)
+        .frame(maxHeight: 400, alignment: .top)
         .onReceive(treadmillService.isConnectedPublisher) { connected in
             isConnected = connected
         }
         .onReceive(treadmillService.statePublisher) { state in
             treadmillState = state
         }
+        .sheet(isPresented: $showingWorkoutHistory) {
+            WorkoutHistoryView(
+                workoutManager: workoutManager,
+                settingsManager: settingsManager
+            )
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowSettingsSheet"))) { _ in
+            showingSettings = true
+        }
     }
     
     private var headerView: some View {
         HStack {
+            // Connection status dot
+            Circle()
+                .fill(isTreadmillReady ? Color.green : Color.red)
+                .frame(width: 8, height: 8)
+            
             Image(systemName: "figure.walk")
                 .font(.title2)
                 .foregroundColor(.primary)
@@ -58,34 +81,38 @@ struct MainMenuView: View {
                 .fontWeight(.medium)
             
             Spacer()
+            
+            // Action buttons
+            HStack(spacing: 8) {
+                Button(action: { showingWorkoutHistory = true }) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 14))
+                }
+                .buttonStyle(.plain)
+                .help("Workout History")
+                
+                Button(action: { openSettings() }) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 14))
+                }
+                .buttonStyle(.plain)
+                .help("Settings")
+            }
+            .foregroundColor(.secondary)
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
     }
     
-    private var connectionStatusView: some View {
-        HStack {
-            Circle()
-                .fill(isConnected ? Color.green : Color.red)
-                .frame(width: 8, height: 8)
-            
-            Text(isConnected ? "Connected to RZ_TreadMill" : "Searching for treadmill...")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Spacer()
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-    }
     
     private var treadmillControlsView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 6) {
             Text("Treadmill Control")
                 .font(.subheadline)
                 .fontWeight(.medium)
             
-            // Speed Control
-            VStack(spacing: 8) {
+            // Speed Control with predefined values and fine adjustment
+            VStack(spacing: 6) {
                 HStack {
                     Text("Speed")
                     Spacer()
@@ -94,10 +121,48 @@ struct MainMenuView: View {
                 }
                 .font(.caption)
                 
-                Slider(value: $currentSpeed, in: 1.0...6.0, step: 0.1) { editing in
-                    if !editing {
-                        workoutManager.setTreadmillSpeed(currentSpeed)
+                // Predefined speed buttons
+                HStack(spacing: 6) {
+                    ForEach(1...6, id: \.self) { speed in
+                        Button("\(speed)") {
+                            currentSpeed = Double(speed)
+                            if isTreadmillReady && workoutManager.isWorkoutActive {
+                                workoutManager.setTreadmillSpeed(currentSpeed)
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .foregroundColor(currentSpeed == Double(speed) ? .white : .primary)
+                        .background(currentSpeed == Double(speed) ? Color.blue : Color.clear)
+                        .cornerRadius(6)
+                        .font(.caption)
                     }
+                }
+                
+                // Fine adjustment buttons
+                HStack(spacing: 12) {
+                    Button("-0.1") {
+                        let newSpeed = max(1.0, currentSpeed - 0.1)
+                        currentSpeed = newSpeed
+                        if isTreadmillReady && workoutManager.isWorkoutActive {
+                            workoutManager.setTreadmillSpeed(newSpeed)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(currentSpeed <= 1.0)
+                    .font(.caption)
+                    
+                    Spacer()
+                    
+                    Button("+0.1") {
+                        let newSpeed = min(6.0, currentSpeed + 0.1)
+                        currentSpeed = newSpeed
+                        if isTreadmillReady && workoutManager.isWorkoutActive {
+                            workoutManager.setTreadmillSpeed(newSpeed)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(currentSpeed >= 6.0)
+                    .font(.caption)
                 }
             }
             
@@ -109,11 +174,13 @@ struct MainMenuView: View {
                             workoutManager.resumeWorkout()
                         }
                         .buttonStyle(.borderedProminent)
+                        .disabled(!isTreadmillReady)
                     } else {
                         Button("Pause") {
                             workoutManager.pauseWorkout()
                         }
                         .buttonStyle(.bordered)
+                        .disabled(!isTreadmillReady)
                     }
                     
                     Button("End Workout") {
@@ -124,19 +191,61 @@ struct MainMenuView: View {
                 } else {
                     Button("Start Workout") {
                         workoutManager.startWorkout()
+                        currentSpeed = settingsManager.userProfile.defaultSpeed
+                        workoutManager.setTreadmillSpeed(currentSpeed)
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(!isTreadmillReady)
                 }
             }
+            
+            if settingsManager.userProfile.simulatorMode {
+                Text("Simulator mode enabled")
+                    .font(.caption)
+                    .foregroundColor(.green)
+                    .padding(.top, 2)
+            } else if !isConnected {
+                Text("Connect treadmill to start workout")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 2)
+            } else if treadmillState == .hibernated {
+                VStack(spacing: 2) {
+                    Text("Treadmill is in hibernation mode")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                    Text("Please restart the treadmill to use it")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, 2)
+            }
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .onAppear {
+            currentSpeed = settingsManager.userProfile.defaultSpeed
+        }
     }
     
     private var currentWorkoutView: some View {
-        VStack(spacing: 8) {
-            Text("Current Workout")
-                .font(.subheadline)
-                .fontWeight(.medium)
+        VStack(spacing: 6) {
+            HStack(spacing: 8) {
+                Text("Current Workout")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                if let workout = workoutManager.currentWorkout, workout.isDemo {
+                    Text("DEMO")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.orange)
+                        .cornerRadius(4)
+                }
+            }
             
             if let workout = workoutManager.currentWorkout {
                 LazyVGrid(columns: [
@@ -161,23 +270,10 @@ struct MainMenuView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
     }
     
-    private var navigationView: some View {
-        VStack(spacing: 8) {
-            Button("Workout History") {
-                // TODO: Show workout history
-            }
-            .buttonStyle(.bordered)
-            
-            Button("Settings") {
-                openSettings()
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-    }
     
     private func workoutStatView(title: String, value: String) -> some View {
         VStack(spacing: 2) {
@@ -200,9 +296,11 @@ struct MainMenuView: View {
         let seconds = Int(timeInterval) % 60
         
         if hours > 0 {
-            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+            return "\(hours)h \(minutes)m \(seconds)s"
+        } else if minutes > 0 {
+            return "\(minutes)m \(seconds)s"
         } else {
-            return String(format: "%d:%02d", minutes, seconds)
+            return "\(seconds)s"
         }
     }
     
@@ -212,8 +310,6 @@ struct MainMenuView: View {
     }
     
     private func openSettings() {
-        // Settings window is now properly managed by StatusBarController
-        // to prevent crashes and duplicate windows
-        NotificationCenter.default.post(name: NSNotification.Name("OpenSettings"), object: nil)
+        showingSettings = true
     }
 }

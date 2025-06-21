@@ -4,17 +4,15 @@ struct UserProfile: Codable {
     var weight: Measurement<UnitMass>
     var strideLength: Measurement<UnitLength>
     var preferredUnits: UnitSystem
-    var autoConnectEnabled: Bool
     var defaultSpeed: Double // km/h
-    var maxSpeed: Double // km/h safety limit
+    var simulatorMode: Bool
     
     init() {
         self.weight = Measurement(value: 70, unit: .kilograms)
         self.strideLength = Measurement(value: 0.7, unit: .meters)
         self.preferredUnits = .metric
-        self.autoConnectEnabled = true
         self.defaultSpeed = 3.0
-        self.maxSpeed = 6.0
+        self.simulatorMode = false
     }
 }
 
@@ -55,6 +53,23 @@ enum UnitSystem: String, CaseIterable, Codable {
             return .kilograms
         case .imperial:
             return .pounds
+        }
+    }
+}
+
+enum MenuBarDisplayOption: String, CaseIterable, Codable {
+    case none = "none"
+    case speed = "speed"
+    case distance = "distance"
+    
+    var displayName: String {
+        switch self {
+        case .none:
+            return "None"
+        case .speed:
+            return "Show current speed"
+        case .distance:
+            return "Show distance"
         }
     }
 }

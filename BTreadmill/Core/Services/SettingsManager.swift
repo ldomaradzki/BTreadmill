@@ -1,112 +1,97 @@
 import Foundation
 import Combine
+import OSLog
 
 class SettingsManager: ObservableObject {
     static let shared = SettingsManager()
+    private let logger = Logger(subsystem: "BTreadmill", category: "settings")
+    private let dataManager = DataManager.shared
     
     @Published var userProfile: UserProfile {
         didSet {
-            saveUserProfile()
+            // Check if simulator mode changed
+            if oldValue.simulatorMode != userProfile.simulatorMode {
+                // Reset the shared treadmill service to use the new mode
+                TreadmillService.resetShared()
+                logger.info("Simulator mode changed to \(self.userProfile.simulatorMode), reset treadmill service")
+            }
+            saveData()
         }
     }
     
-    @Published var showSpeedInMenuBar: Bool {
+    @Published var workoutHistory: [WorkoutSession] = [] {
         didSet {
-            UserDefaults.standard.set(showSpeedInMenuBar, forKey: "showSpeedInMenuBar")
-        }
-    }
-    
-    @Published var showDistanceInMenuBar: Bool {
-        didSet {
-            UserDefaults.standard.set(showDistanceInMenuBar, forKey: "showDistanceInMenuBar")
-        }
-    }
-    
-    @Published var launchAtLogin: Bool {
-        didSet {
-            UserDefaults.standard.set(launchAtLogin, forKey: "launchAtLogin")
-            // TODO: Implement launch at login functionality
-        }
-    }
-    
-    @Published var enableNotifications: Bool {
-        didSet {
-            UserDefaults.standard.set(enableNotifications, forKey: "enableNotifications")
+            saveData()
         }
     }
     
     private init() {
-        // Load user profile
-        if let data = UserDefaults.standard.data(forKey: "userProfile"),
-           let profile = try? JSONDecoder().decode(UserProfile.self, from: data) {
-            self.userProfile = profile
+        // Load data from JSON file
+        if let appData = dataManager.loadData() {
+            self.userProfile = appData.userProfile
+            self.workoutHistory = appData.workoutHistory
+            logger.info("Loaded \(self.workoutHistory.count) workouts from data file")
         } else {
+            // No existing data, start with defaults
             self.userProfile = UserProfile()
-        }
-        
-        // Load other settings
-        self.showSpeedInMenuBar = UserDefaults.standard.bool(forKey: "showSpeedInMenuBar")
-        self.showDistanceInMenuBar = UserDefaults.standard.bool(forKey: "showDistanceInMenuBar")
-        self.launchAtLogin = UserDefaults.standard.bool(forKey: "launchAtLogin")
-        self.enableNotifications = UserDefaults.standard.bool(forKey: "enableNotifications")
-    }
-    
-    private func saveUserProfile() {
-        if let data = try? JSONEncoder().encode(userProfile) {
-            UserDefaults.standard.set(data, forKey: "userProfile")
+            self.workoutHistory = []
+            logger.info("Starting with default user profile and empty workout history")
         }
     }
     
-    // MARK: - Convenience Methods
-    
-    func resetToDefaults() {
-        userProfile = UserProfile()
-        showSpeedInMenuBar = false
-        showDistanceInMenuBar = false
-        launchAtLogin = false
-        enableNotifications = true
+    private func saveData() {
+        let appData = AppData(userProfile: userProfile, workoutHistory: workoutHistory)
+        do {
+            try dataManager.saveData(appData)
+        } catch {
+            logger.error("Failed to save data: \(error.localizedDescription)")
+        }
     }
     
-    func exportSettings() -> Data? {
-        let settings = [
-            "userProfile": userProfile,
-            "showSpeedInMenuBar": showSpeedInMenuBar,
-            "showDistanceInMenuBar": showDistanceInMenuBar,
-            "launchAtLogin": launchAtLogin,
-            "enableNotifications": enableNotifications
-        ] as [String : Any]
-        
-        return try? JSONSerialization.data(withJSONObject: settings)
+    // MARK: - Workout Management
+    
+    func addWorkout(_ workout: WorkoutSession) {
+        workoutHistory.insert(workout, at: 0) // Insert at beginning for newest-first order
+        logger.info("Added workout: \(workout.id) - Demo: \(workout.isDemo)")
     }
     
-    func importSettings(from data: Data) -> Bool {
-        guard let settings = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return false
+    func deleteWorkout(id: UUID) {
+        workoutHistory.removeAll { $0.id == id }
+        logger.info("Deleted workout: \(id)")
+    }
+    
+    // MARK: - Import/Export
+    
+    func exportData(to url: URL) throws {
+        let appData = AppData(userProfile: userProfile, workoutHistory: workoutHistory)
+        try dataManager.exportData(to: url, appData: appData)
+    }
+    
+    func importData(from url: URL) throws {
+        let appData = try dataManager.importData(from: url)
+        
+        // Update the published properties (this will trigger UI updates and auto-save)
+        self.userProfile = appData.userProfile
+        self.workoutHistory = appData.workoutHistory
+        
+        logger.info("Successfully imported data with \(self.workoutHistory.count) workouts")
+    }
+    
+    // MARK: - Data Info
+    
+    func getDataFileInfo() -> (exists: Bool, size: String?, path: String) {
+        let exists = dataManager.dataFileExists()
+        let sizeString: String?
+        
+        if let size = dataManager.getDataFileSize() {
+            let formatter = ByteCountFormatter()
+            formatter.allowedUnits = [.useKB, .useMB]
+            formatter.countStyle = .file
+            sizeString = formatter.string(fromByteCount: size)
+        } else {
+            sizeString = nil
         }
         
-        // Import user profile if available
-        if let profileData = settings["userProfile"] as? Data,
-           let profile = try? JSONDecoder().decode(UserProfile.self, from: profileData) {
-            userProfile = profile
-        }
-        
-        // Import other settings
-        if let value = settings["showSpeedInMenuBar"] as? Bool {
-            showSpeedInMenuBar = value
-        }
-        
-        if let value = settings["showDistanceInMenuBar"] as? Bool {
-            showDistanceInMenuBar = value
-        }
-        
-        if let value = settings["launchAtLogin"] as? Bool {
-            launchAtLogin = value
-        }
-        
-        if let value = settings["enableNotifications"] as? Bool {
-            enableNotifications = value
-        }
-        
-        return true
+        return (exists: exists, size: sizeString, path: dataManager.getDataFileURL().path)
     }
 }

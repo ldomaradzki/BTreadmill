@@ -13,7 +13,7 @@ BTreadmill is a macOS menu bar application designed to provide seamless Bluetoot
 ### Core Technologies
 - **Swift/SwiftUI**: Primary development language and UI framework
 - **Core Bluetooth**: Bluetooth Low Energy communication with treadmill
-- **Core Data**: Local workout data persistence
+- **JSON Storage**: Local workout data persistence with DataManager
 - **XcodeGen**: Project generation and configuration management
 
 ## Architecture Overview
@@ -35,10 +35,10 @@ WorkoutManager
 ├── Calculates derived data (steps, calories, pace)
 └── Manages workout pause/resume functionality
 
-DataStore
-├── Persists workout sessions using Core Data
+DataManager
+├── Persists workout sessions using JSON storage
 ├── Provides workout history queries
-└── Handles data export functionality
+└── Handles data import/export functionality
 
 SettingsManager
 ├── Manages user preferences and configuration
@@ -149,10 +149,10 @@ Popover Layout
 - **Session Management**: Start/stop workout sessions independent of treadmill state
 
 ### Data Persistence
-- **Local Storage**: Core Data-based workout history
+- **Local Storage**: JSON-based workout history with DataManager service
 - **Session Recovery**: Restore interrupted workouts on app restart
-- **Data Export**: Export workout data to CSV/JSON formats
-- **Data Integrity**: Backup and recovery mechanisms
+- **Data Export**: Export workout data to JSON formats
+- **Data Integrity**: Versioned data format with migration support
 
 ### User Settings
 - **User Profile**: Weight, stride length, preferred units
@@ -175,28 +175,31 @@ Popover Layout
 - [x] Bluetooth service porting from WBTreadmill
 
 ### Phase 2: Treadmill Integration (Week 1-2)
-- [ ] TreadmillService implementation
-- [ ] Command system and state management
-- [ ] Real-time data parsing and display
-- [ ] Connection management and error handling
+- [x] TreadmillService implementation
+- [x] Command system and state management
+- [x] Real-time data parsing and display
+- [x] Connection management and error handling
+- [x] TreadmillSimulatorService for testing
 
 ### Phase 3: Workout Tracking (Week 2)
-- [ ] WorkoutManager implementation
-- [ ] Basic workout session tracking
-- [ ] Pause/resume functionality
-- [ ] Metric calculations (steps, calories)
+- [x] WorkoutManager implementation
+- [x] Basic workout session tracking
+- [x] Pause/resume functionality
+- [x] Metric calculations (steps, calories)
 
 ### Phase 4: UI Development (Week 2-3)
-- [ ] Menu bar popover interface
-- [ ] Treadmill control components
-- [ ] Workout display components
-- [ ] Settings interface
+- [x] Menu bar popover interface
+- [x] Treadmill control components
+- [x] Workout display components
+- [x] Settings interface
+- [x] Workout history interface
 
 ### Phase 5: Data Persistence (Week 3)
-- [ ] Core Data model setup
-- [ ] Workout history storage
-- [ ] Data export functionality
-- [ ] Settings persistence
+- [x] JSON-based data model setup
+- [x] Workout history storage
+- [x] Data export functionality
+- [x] Settings persistence
+- [x] Data persistence bug fixes
 
 ### Phase 6: Polish & Testing (Week 3-4)
 - [ ] Error handling and edge cases
@@ -228,9 +231,9 @@ Popover Layout
 
 ### Core Functionality
 - [x] Reliable Bluetooth connection to RZ_TreadMill
-- [ ] Accurate real-time workout tracking
-- [ ] Persistent workout history storage
-- [ ] Intuitive menu bar interface
+- [x] Accurate real-time workout tracking
+- [x] Persistent workout history storage
+- [x] Intuitive menu bar interface
 
 ### User Experience
 - [ ] Sub-second connection time to known devices

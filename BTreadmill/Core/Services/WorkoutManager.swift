@@ -2,13 +2,17 @@ import Foundation
 import Combine
 import OSLog
 
+extension Notification.Name {
+    static let treadmillServiceReset = Notification.Name("treadmillServiceReset")
+}
+
 class WorkoutManager: ObservableObject {
     private let logger = Logger(subsystem: "BTreadmill", category: "workout")
-    private let treadmillService: TreadmillServiceProtocol
     private var bag = Set<AnyCancellable>()
     
     @Published var currentWorkout: WorkoutSession?
     @Published var isWorkoutActive: Bool = false
+    @Published var workoutHistory: [WorkoutSession] = []
     
     // Workout statistics
     private let currentWorkoutSubject = CurrentValueSubject<WorkoutSession?, Never>(nil)
@@ -16,12 +20,29 @@ class WorkoutManager: ObservableObject {
         currentWorkoutSubject.eraseToAnyPublisher()
     }
     
-    init(treadmillService: TreadmillServiceProtocol) {
-        self.treadmillService = treadmillService
+    private var treadmillService: TreadmillServiceProtocol {
+        return TreadmillService.shared
+    }
+    
+    init() {
         setupSubscriptions()
+        
+        // Load existing workout history from persistent storage after services are set up
+        loadWorkoutHistory()
+        
+        // Listen for service changes
+        NotificationCenter.default.publisher(for: .treadmillServiceReset)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.setupSubscriptions()
+            }
+            .store(in: &bag)
     }
     
     private func setupSubscriptions() {
+        // Clear existing subscriptions except for the service reset notification
+        bag.removeAll()
+        
         // Subscribe to treadmill state changes
         treadmillService.statePublisher
             .receive(on: DispatchQueue.main)
@@ -36,6 +57,15 @@ class WorkoutManager: ObservableObject {
                 self?.currentWorkoutSubject.send(workout)
             }
             .store(in: &bag)
+        
+        // Re-add the service reset notification
+        NotificationCenter.default.publisher(for: .treadmillServiceReset)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.logger.info("Treadmill service reset, re-subscribing")
+                self?.setupSubscriptions()
+            }
+            .store(in: &bag)
     }
     
     // MARK: - Workout Control
@@ -46,10 +76,12 @@ class WorkoutManager: ObservableObject {
             return
         }
         
-        currentWorkout = WorkoutSession()
+        // Determine if this is a demo workout based on simulator mode
+        let isDemo = SettingsManager.shared.userProfile.simulatorMode
+        currentWorkout = WorkoutSession(isDemo: isDemo)
         isWorkoutActive = true
         
-        logger.info("Started new workout session: \(self.currentWorkout?.id.uuidString ?? "unknown")")
+        logger.info("Started new workout session: \(self.currentWorkout?.id.uuidString ?? "unknown") - Demo: \(isDemo)")
         
         // Send start command to treadmill
         treadmillService.sendCommand(.start)
@@ -124,16 +156,27 @@ class WorkoutManager: ObservableObject {
         guard var workout = currentWorkout else { return }
         
         switch state {
-        case .running(let runningState), .stopping(let runningState):
+        case .running(let runningState):
             // Update workout with current treadmill data
+            workout.updateWith(runningState: runningState)
+            
+            // If workout was paused but treadmill is running, resume it
+            if workout.isPaused && isWorkoutActive {
+                workout.resume()
+            }
+            
+            currentWorkout = workout
+            
+        case .stopping(let runningState):
+            // Update workout with final state but don't auto-pause
             workout.updateWith(runningState: runningState)
             currentWorkout = workout
             
         case .idling, .hibernated:
-            // Treadmill stopped - if we have an active workout, pause it
-            if isWorkoutActive && !workout.isPaused {
-                pauseWorkout()
-            }
+            // Only auto-pause if the user didn't manually pause
+            // and the treadmill has been idle for a significant time
+            // This prevents premature pausing during startup
+            break
             
         default:
             break
@@ -141,24 +184,33 @@ class WorkoutManager: ObservableObject {
     }
     
     private func saveWorkout(_ workout: WorkoutSession) {
-        // For now, just log the workout. Later this will save to Core Data
-        logger.info("Saving workout: \(workout.id) - \(workout.totalDistance.value) km in \(workout.activeTime) seconds")
+        // Save to SettingsManager which handles JSON persistence
+        SettingsManager.shared.addWorkout(workout)
         
-        // TODO: Implement Core Data persistence
-        // DataStore.shared.saveWorkout(workout)
+        // Update local in-memory copy to stay in sync
+        workoutHistory.insert(workout, at: 0)
+        
+        logger.info("Saving workout: \(workout.id) - \(workout.totalDistance.value) km in \(workout.activeTime) seconds - Demo: \(workout.isDemo)")
     }
     
-    // MARK: - Workout History (placeholder)
+    // MARK: - Workout History
+    
+    private func loadWorkoutHistory() {
+        // Ensure SettingsManager is fully initialized before accessing workout history
+        DispatchQueue.main.async { [weak self] in
+            self?.workoutHistory = SettingsManager.shared.workoutHistory
+            self?.logger.info("Loaded \(self?.workoutHistory.count ?? 0) workouts into WorkoutManager")
+        }
+    }
     
     func getWorkoutHistory() -> [WorkoutSession] {
-        // TODO: Implement Core Data fetch
-        // return DataStore.shared.fetchWorkouts()
-        return []
+        // Get the latest data from SettingsManager
+        return SettingsManager.shared.workoutHistory
     }
     
     func deleteWorkout(id: UUID) {
-        // TODO: Implement Core Data deletion
-        // DataStore.shared.deleteWorkout(with: id)
-        logger.info("Delete workout requested for: \(id)")
+        SettingsManager.shared.deleteWorkout(id: id)
+        workoutHistory.removeAll { $0.id == id }
+        logger.info("Deleted workout: \(id)")
     }
 }

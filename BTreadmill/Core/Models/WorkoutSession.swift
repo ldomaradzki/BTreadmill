@@ -12,12 +12,22 @@ struct WorkoutSession: Identifiable, Codable {
     var estimatedCalories: Int
     var isPaused: Bool
     var pausedDuration: TimeInterval
+    var isDemo: Bool
+    
+    // Actual session timing (wall-clock time including pauses)
+    var actualStartDate: Date
+    var actualEndDate: Date?
+    
+    // Values before pause (for accumulation after resume)
+    var distanceBeforePause: Measurement<UnitLength>
+    var stepsBeforePause: Int
+    var caloriesBeforePause: Int
     
     // Current workout state (for active sessions)
     var currentSpeed: Measurement<UnitSpeed>
     var lastUpdateTime: Date
     
-    init(id: UUID = UUID(), startTime: Date = Date()) {
+    init(id: UUID = UUID(), startTime: Date = Date(), isDemo: Bool = false) {
         self.id = id
         self.startTime = startTime
         self.endTime = nil
@@ -29,6 +39,12 @@ struct WorkoutSession: Identifiable, Codable {
         self.estimatedCalories = 0
         self.isPaused = false
         self.pausedDuration = 0
+        self.isDemo = isDemo
+        self.actualStartDate = startTime
+        self.actualEndDate = nil
+        self.distanceBeforePause = Measurement(value: 0, unit: .kilometers)
+        self.stepsBeforePause = 0
+        self.caloriesBeforePause = 0
         self.currentSpeed = Measurement(value: 0, unit: .kilometersPerHour)
         self.lastUpdateTime = startTime
     }
@@ -41,14 +57,21 @@ struct WorkoutSession: Identifiable, Codable {
         return totalTime - pausedDuration
     }
     
+    var actualSessionDuration: TimeInterval {
+        guard let endDate = actualEndDate else {
+            return Date().timeIntervalSince(actualStartDate)
+        }
+        return endDate.timeIntervalSince(actualStartDate)
+    }
+    
     mutating func updateWith(runningState: RunningState) {
         let timeDelta = runningState.timestamp.timeIntervalSince(lastUpdateTime)
         
         if !isPaused {
             totalTime += timeDelta
             
-            // Update distance (treadmill provides cumulative distance)
-            totalDistance = runningState.distance
+            // Update distance (accumulate with pre-pause values)
+            totalDistance = Measurement(value: distanceBeforePause.value + runningState.distance.converted(to: distanceBeforePause.unit).value, unit: distanceBeforePause.unit)
             
             // Update speed tracking
             currentSpeed = runningState.speed
@@ -56,8 +79,8 @@ struct WorkoutSession: Identifiable, Codable {
                 maxSpeed = runningState.speed
             }
             
-            // Update steps
-            totalSteps = runningState.steps
+            // Update steps (accumulate with pre-pause values)
+            totalSteps = stepsBeforePause + runningState.steps
             
             // Calculate average speed (excluding paused time)
             if activeTime > 0 {
@@ -73,15 +96,23 @@ struct WorkoutSession: Identifiable, Codable {
     }
     
     mutating func pause() {
+        // Store current values before pausing
+        distanceBeforePause = totalDistance
+        stepsBeforePause = totalSteps
+        caloriesBeforePause = estimatedCalories
         isPaused = true
     }
     
     mutating func resume() {
+        // Values are already stored in distanceBeforePause, stepsBeforePause, caloriesBeforePause
+        // The updateWith method will accumulate new treadmill values with these stored values
         isPaused = false
     }
     
     mutating func end() {
-        endTime = Date()
+        let now = Date()
+        endTime = now
+        actualEndDate = now
         isPaused = false
     }
     

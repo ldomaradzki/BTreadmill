@@ -6,14 +6,15 @@ class StatusBarController: NSObject {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
     private var bag = Set<AnyCancellable>()
-    var settingsWindow: NSWindow?
     
-    private let treadmillService: TreadmillServiceProtocol
     private let workoutManager: WorkoutManager
     private let settingsManager: SettingsManager
     
-    init(treadmillService: TreadmillServiceProtocol, workoutManager: WorkoutManager, settingsManager: SettingsManager) {
-        self.treadmillService = treadmillService
+    private var treadmillService: TreadmillServiceProtocol {
+        return TreadmillService.shared
+    }
+    
+    init(workoutManager: WorkoutManager, settingsManager: SettingsManager) {
         self.workoutManager = workoutManager
         self.settingsManager = settingsManager
         
@@ -64,15 +65,19 @@ class StatusBarController: NSObject {
     
     private func setupPopover() {
         popover = NSPopover()
-        popover?.contentSize = NSSize(width: 300, height: 400)
+        popover?.contentSize = NSSize(width: 300, height: 200) // Initial minimal size
         popover?.behavior = .transient
-        popover?.contentViewController = NSHostingController(
+        
+        let hostingController = NSHostingController(
             rootView: MainMenuView(
-                treadmillService: treadmillService,
                 workoutManager: workoutManager,
                 settingsManager: settingsManager
             )
         )
+        
+        // Allow the popover to resize based on content
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        popover?.contentViewController = hostingController
     }
     
     private func setupSubscriptions() {
@@ -84,15 +89,14 @@ class StatusBarController: NSObject {
             }
             .store(in: &bag)
         
-        // Update status bar text based on workout state and settings
-        Publishers.CombineLatest3(
+        // Update status bar text based on workout state
+        Publishers.CombineLatest(
             workoutManager.currentWorkoutPublisher,
-            treadmillService.statePublisher,
-            settingsManager.$showSpeedInMenuBar
+            treadmillService.statePublisher
         )
         .receive(on: DispatchQueue.main)
-        .sink { [weak self] workout, treadmillState, showSpeed in
-            self?.updateStatusBarText(workout: workout, treadmillState: treadmillState, showSpeed: showSpeed)
+        .sink { [weak self] workout, treadmillState in
+            self?.updateStatusBarText(workout: workout, treadmillState: treadmillState)
         }
         .store(in: &bag)
         
@@ -108,25 +112,21 @@ class StatusBarController: NSObject {
     private func updateStatusBarIcon(isConnected: Bool) {
         guard let button = statusItem?.button else { return }
         
-        // Try multiple icon options in order of preference
-        let iconName = isConnected ? "figure.walk" : "figure.walk.slash"
+        // Always show the walk icon
         if let image = NSImage(named: "StatusBarIcon") {
-            // Custom icon - change opacity to indicate connection
-            button.image = image
-            button.image?.isTemplate = true
-            button.alphaValue = isConnected ? 1.0 : 0.5
-            button.title = "" // Clear title when using image
-        } else if let image = NSImage(systemSymbolName: iconName, accessibilityDescription: "BTreadmill") {
-            // SF Symbol
+            // Custom icon
             button.image = image
             button.image?.isTemplate = true
             button.alphaValue = 1.0
-            button.title = "" // Clear title when using image
+        } else if let image = NSImage(systemSymbolName: "figure.walk", accessibilityDescription: "BTreadmill") {
+            // SF Symbol - always use walk icon
+            button.image = image
+            button.image?.isTemplate = true
+            button.alphaValue = 1.0
         } else {
-            // Text fallback with connection indicator
+            // Text fallback - show walk symbol
             button.image = nil
-            button.alphaValue = 1.0
-            button.title = isConnected ? "T●" : "T○"
+            button.title = "🚶"
             button.font = NSFont.systemFont(ofSize: 14, weight: .medium)
         }
         
@@ -134,36 +134,39 @@ class StatusBarController: NSObject {
         button.toolTip = isConnected ? "BTreadmill - Connected" : "BTreadmill - Disconnected"
     }
     
-    private func updateStatusBarText(workout: WorkoutSession?, treadmillState: TreadmillState, showSpeed: Bool) {
+    private func updateStatusBarText(workout: WorkoutSession?, treadmillState: TreadmillState) {
         guard let button = statusItem?.button else { return }
         
         var text = ""
         
-        if let workout = workout, workout.isActive {
-            if showSpeed {
-                if case .running(let runningState) = treadmillState {
-                    let speed = runningState.speed.converted(to: settingsManager.userProfile.preferredUnits.speedUnit)
-                    text = String(format: "%.1f", speed.value)
-                } else {
-                    text = "0.0"
-                }
-            } else if settingsManager.showDistanceInMenuBar {
-                let distance = workout.totalDistance.converted(to: settingsManager.userProfile.preferredUnits.distanceUnit)
-                text = String(format: "%.2f", distance.value)
-            }
+        if let workout = workout, workout.isActive && !workout.isPaused {
+            // Show timer and distance in format: "33m 2.1km"
+            let timeText = formatWorkoutTime(workout.activeTime)
+            let distance = workout.totalDistance.converted(to: settingsManager.userProfile.preferredUnits.distanceUnit)
+            let distanceText = String(format: "%.1f%@", distance.value, distance.unit.symbol)
+            text = " \(timeText) \(distanceText)"
         }
         
-        // Only update title if we have text to show AND we're not using an icon
-        if !text.isEmpty && button.image == nil {
+        // Always show icon with optional text
+        if button.image != nil {
             button.title = text
-        } else if text.isEmpty {
-            // Clear title when no data to show (preserves icon if present)
-            if button.image != nil {
-                button.title = ""
-            }
-        } else if !text.isEmpty && button.image != nil {
-            // Show both icon and text when we have data
-            button.title = " " + text // Space before text for better visual separation
+        } else {
+            // Fallback if no icon available
+            button.title = text.isEmpty ? "🚶" : "🚶\(text)"
+        }
+    }
+    
+    private func formatWorkoutTime(_ timeInterval: TimeInterval) -> String {
+        let hours = Int(timeInterval) / 3600
+        let minutes = Int(timeInterval) % 3600 / 60
+        let seconds = Int(timeInterval) % 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m \(seconds)s"
+        } else if minutes > 0 {
+            return "\(minutes)m \(seconds)s"
+        } else {
+            return "\(seconds)s"
         }
     }
     
@@ -194,44 +197,8 @@ class StatusBarController: NSObject {
     }
     
     @objc private func openSettings() {
-        // If settings window already exists, just bring it to front
-        if let existingWindow = settingsWindow {
-            existingWindow.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-            return
-        }
-        
-        // Create new settings window using a different approach
-        DispatchQueue.main.async { [weak self] in
-            self?.createSettingsWindow()
-        }
-    }
-    
-    private func createSettingsWindow() {
-        // Create the settings view with explicit dependencies
-        let settingsView = SettingsView()
-        let hostingController = NSHostingController(rootView: settingsView)
-        
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
-            styleMask: [.titled, .closable, .resizable, .miniaturizable],
-            backing: .buffered,
-            defer: false
-        )
-        
-        window.contentViewController = hostingController
-        window.title = "BTreadmill Settings"
-        window.center()
-        
-        // Use a custom window controller to manage lifecycle
-        let windowController = SettingsWindowController(window: window)
-        windowController.statusBarController = self
-        
-        // Retain the window
-        self.settingsWindow = window
-        
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        // Post notification to MainMenuView to show settings sheet
+        NotificationCenter.default.post(name: NSNotification.Name("ShowSettingsSheet"), object: nil)
     }
     
     @objc private func quit() {

@@ -2,37 +2,22 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingExportFileDialog = false
+    @State private var showingImportFileDialog = false
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
     
     var body: some View {
-        TabView {
-            // General Settings
-            GeneralSettingsView()
-                .tabItem {
-                    Label("General", systemImage: "gear")
-                }
+        VStack(spacing: 0) {
+            // Header
+            headerView
             
-            // User Profile
-            UserProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.circle")
-                }
+            Divider()
             
-            // Display Settings
-            DisplaySettingsView()
-                .tabItem {
-                    Label("Display", systemImage: "display")
-                }
-        }
-        .frame(minWidth: 600, minHeight: 400)
-    }
-}
-
-struct GeneralSettingsView: View {
-    @ObservedObject private var settingsManager = SettingsManager.shared
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            // Content
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
                 // Application Section
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Application")
@@ -40,8 +25,15 @@ struct GeneralSettingsView: View {
                         .padding(.bottom, 4)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Toggle("Launch at login", isOn: $settingsManager.launchAtLogin)
-                        Toggle("Enable notifications", isOn: $settingsManager.enableNotifications)
+                        HStack {
+                            Toggle("Simulator mode", isOn: $settingsManager.userProfile.simulatorMode)
+                                .toggleStyle(.switch)
+                        }
+                        
+                        Text("Enable demo mode to simulate treadmill data without physical hardware.")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 
@@ -54,8 +46,6 @@ struct GeneralSettingsView: View {
                         .padding(.bottom, 4)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Toggle("Auto-connect to known devices", isOn: $settingsManager.userProfile.autoConnectEnabled)
-                        
                         HStack {
                             Text("Default speed:")
                                 .frame(minWidth: 120, alignment: .leading)
@@ -66,83 +56,11 @@ struct GeneralSettingsView: View {
                             Text("km/h")
                                 .frame(width: 40, alignment: .leading)
                         }
-                        
-                        HStack {
-                            Text("Maximum speed:")
-                                .frame(minWidth: 120, alignment: .leading)
-                            Spacer()
-                            TextField("Max Speed", value: $settingsManager.userProfile.maxSpeed, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 80)
-                            Text("km/h")
-                                .frame(width: 40, alignment: .leading)
-                        }
                     }
                 }
                 
                 Divider()
                 
-                // Actions Section
-                HStack(spacing: 12) {
-                    Button("Reset to Defaults") {
-                        settingsManager.resetToDefaults()
-                    }
-                    .buttonStyle(.bordered)
-                    
-                    Spacer()
-                    
-                    Button("Export Settings") {
-                        exportSettings()
-                    }
-                    .buttonStyle(.bordered)
-                    
-                    Button("Import Settings") {
-                        importSettings()
-                    }
-                    .buttonStyle(.bordered)
-                }
-                
-                Spacer()
-            }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-    
-    private func exportSettings() {
-        let panel = NSSavePanel()
-        panel.nameFieldStringValue = "BTreadmill Settings.json"
-        panel.allowedContentTypes = [.json]
-        
-        panel.begin { result in
-            if result == .OK, let url = panel.url,
-               let data = settingsManager.exportSettings() {
-                try? data.write(to: url)
-            }
-        }
-    }
-    
-    private func importSettings() {
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.json]
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-        
-        panel.begin { result in
-            if result == .OK, let url = panel.url,
-               let data = try? Data(contentsOf: url) {
-                _ = settingsManager.importSettings(from: data)
-            }
-        }
-    }
-}
-
-struct UserProfileView: View {
-    @ObservedObject private var settingsManager = SettingsManager.shared
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
                 // Personal Information Section
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Personal Information")
@@ -186,13 +104,62 @@ struct UserProfileView: View {
                         Text("Unit system:")
                             .frame(minWidth: 120, alignment: .leading)
                         Spacer()
-                        Picker("Unit system", selection: $settingsManager.userProfile.preferredUnits) {
+                        Picker("", selection: $settingsManager.userProfile.preferredUnits) {
                             ForEach(UnitSystem.allCases, id: \.self) { unit in
                                 Text(unit.displayName).tag(unit)
                             }
                         }
                         .pickerStyle(.menu)
                         .frame(minWidth: 150, maxWidth: 200)
+                    }
+                }
+                
+                Divider()
+                
+                // Data Management Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Data Management")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        let dataInfo = settingsManager.getDataFileInfo()
+                        
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Data file: \(dataInfo.exists ? "Found" : "Not found")")
+                                    .font(.caption)
+                                    .foregroundColor(dataInfo.exists ? .primary : .secondary)
+                                
+                                if let size = dataInfo.size {
+                                    Text("Size: \(size)")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            VStack(spacing: 6) {
+                                HStack(spacing: 8) {
+                                    Button("Export") {
+                                        showingExportFileDialog = true
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .disabled(!dataInfo.exists)
+                                    
+                                    Button("Import") {
+                                        showingImportFileDialog = true
+                                    }
+                                    .buttonStyle(.bordered)
+                                }
+                            }
+                        }
+                        
+                        Text("Export saves all your settings and workout history to a JSON file. Import replaces current data with imported file.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 
@@ -210,61 +177,157 @@ struct UserProfileView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 
-                Spacer()
+                Divider()
+                
+                // Stride Length Calculation Guide
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("How to Calculate Your Stride Length")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("1. Start a 1-minute workout at 4.0 km/h (comfortable walking pace)")
+                            .font(.caption)
+                        Text("2. Note the number of steps shown after 1 minute")
+                            .font(.caption)
+                        Text("3. Calculate: Distance = 4.0 km/h ÷ 60 min = 66.7 meters per minute")
+                            .font(.caption)
+                        Text("4. Stride length = 66.7 meters ÷ number of steps")
+                            .font(.caption)
+                        Text("5. Example: 66.7m ÷ 80 steps = 0.83m stride length")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                    Spacer()
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(width: 400, height: 500)
+        .background(Color(.windowBackgroundColor))
+        .fileExporter(
+            isPresented: $showingExportFileDialog,
+            document: BTreadmillDataDocument(),
+            contentType: .json,
+            defaultFilename: "btreadmill_data.json"
+        ) { result in
+            handleExportResult(result)
+        }
+        .fileImporter(
+            isPresented: $showingImportFileDialog,
+            allowedContentTypes: [.json],
+            allowsMultipleSelection: false
+        ) { result in
+            handleImportResult(result)
+        }
+        .alert("Data Management", isPresented: $showingAlert) {
+            Button("OK") { }
+        } message: {
+            Text(alertMessage)
+        }
+    }
+    
+    private var headerView: some View {
+        HStack {
+            Text("Settings")
+                .font(.title2)
+                .fontWeight(.semibold)
+            
+            Spacer()
+            
+            Button("Done") {
+                dismiss()
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+    
+    // MARK: - Import/Export Handlers
+    
+    private func handleExportResult(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            do {
+                try settingsManager.exportData(to: url)
+                alertMessage = "Data successfully exported to: \(url.lastPathComponent)"
+                showingAlert = true
+            } catch {
+                alertMessage = "Export failed: \(error.localizedDescription)"
+                showingAlert = true
+            }
+        case .failure(let error):
+            alertMessage = "Export cancelled: \(error.localizedDescription)"
+            showingAlert = true
+        }
+    }
+    
+    private func handleImportResult(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else {
+                alertMessage = "No file selected for import."
+                showingAlert = true
+                return
+            }
+            
+            do {
+                try settingsManager.importData(from: url)
+                alertMessage = "Data successfully imported from: \(url.lastPathComponent)\n\nLoaded \(settingsManager.workoutHistory.count) workouts."
+                showingAlert = true
+            } catch {
+                alertMessage = "Import failed: \(error.localizedDescription)"
+                showingAlert = true
+            }
+        case .failure(let error):
+            alertMessage = "Import cancelled: \(error.localizedDescription)"
+            showingAlert = true
         }
     }
 }
 
-struct DisplaySettingsView: View {
-    @ObservedObject private var settingsManager = SettingsManager.shared
+// MARK: - Document Wrapper for Export
+
+import UniformTypeIdentifiers
+
+struct BTreadmillDataDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
     
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Menu Bar Display Section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Menu Bar Display")
-                        .font(.headline)
-                        .padding(.bottom, 4)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Toggle("Show current speed", isOn: $settingsManager.showSpeedInMenuBar)
-                        Toggle("Show distance", isOn: $settingsManager.showDistanceInMenuBar)
-                    }
-                }
-                
-                Divider()
-                
-                // Help Text
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Information")
-                        .font(.headline)
-                        .padding(.bottom, 4)
-                    
-                    Text("Choose what information to display in the menu bar during workouts. Only one option can be active at a time.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                
-                Spacer()
-            }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    let data: Data
+    
+    init() {
+        // Get current app data for export
+        let appData = AppData(
+            userProfile: SettingsManager.shared.userProfile,
+            workoutHistory: SettingsManager.shared.workoutHistory
+        )
+        
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        
+        do {
+            self.data = try encoder.encode(appData)
+        } catch {
+            // Fallback to empty JSON if encoding fails
+            self.data = "{}".data(using: .utf8) ?? Data()
         }
-        .onChange(of: settingsManager.showSpeedInMenuBar) { newValue in
-            if newValue {
-                settingsManager.showDistanceInMenuBar = false
-            }
+    }
+    
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else {
+            throw CocoaError(.fileReadCorruptFile)
         }
-        .onChange(of: settingsManager.showDistanceInMenuBar) { newValue in
-            if newValue {
-                settingsManager.showSpeedInMenuBar = false
-            }
-        }
+        self.data = data
+    }
+    
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        return FileWrapper(regularFileWithContents: data)
     }
 }
 

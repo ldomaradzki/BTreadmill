@@ -18,13 +18,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     private func setupServices() {
         settingsManager = SettingsManager.shared
+        workoutManager = WorkoutManager()
         treadmillService = TreadmillService.shared
-        workoutManager = WorkoutManager(treadmillService: treadmillService!)
     }
     
     private func setupStatusBar() {
         statusBarController = StatusBarController(
-            treadmillService: treadmillService!,
             workoutManager: workoutManager!,
             settingsManager: settingsManager!
         )

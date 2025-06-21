@@ -83,13 +83,17 @@ extension BluetoothService: CBCentralManagerDelegate, CBPeripheralDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        isConnectedSubject.send(false)
+        DispatchQueue.main.async {
+            self.isConnectedSubject.send(false)
+        }
         self.peripheral = nil
         connect(central)
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        isConnectedSubject.send(false)
+        DispatchQueue.main.async {
+            self.isConnectedSubject.send(false)
+        }
         logger.error("\(error?.localizedDescription ?? "\(#function)")")
     }
     
@@ -120,7 +124,9 @@ extension BluetoothService: CBCentralManagerDelegate, CBPeripheralDelegate {
         peripheral.delegate = self
         peripheral.discoverServices(nil)
         
-        isConnectedSubject.send(true)
+        DispatchQueue.main.async {
+            self.isConnectedSubject.send(true)
+        }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {

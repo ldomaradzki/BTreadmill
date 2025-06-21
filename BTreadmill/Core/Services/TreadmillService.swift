@@ -35,14 +35,33 @@ class TreadmillService: TreadmillServiceProtocol {
     var statePublisher: AnyPublisher<TreadmillState, Never> { treadmillStateSubject.eraseToAnyPublisher() }
     var isConnectedPublisher: AnyPublisher<Bool, Never> { bluetoothService.isConnectedPublisher }
     
+    private static var _shared: TreadmillServiceProtocol?
+    
     static var shared: TreadmillServiceProtocol {
+        if let existing = _shared {
+            return existing
+        }
+        
+        // Check if simulator mode is enabled in settings
+        if SettingsManager.shared.userProfile.simulatorMode {
+            _shared = TreadmillSimulatorService()
+            return _shared!
+        }
+        
         #if targetEnvironment(simulator)
         let treadmillService = TreadmillServiceMock()
         treadmillService.isConnectedMock = true
-        return treadmillService
+        _shared = treadmillService
+        return _shared!
         #else
-        return TreadmillService()
+        _shared = TreadmillService()
+        return _shared!
         #endif
+    }
+    
+    static func resetShared() {
+        _shared = nil
+        NotificationCenter.default.post(name: .treadmillServiceReset, object: nil)
     }
     
     init() {
@@ -107,7 +126,8 @@ class TreadmillService: TreadmillServiceProtocol {
             logger.warning("Data packet too small for running state: \(rawStream)")
             return .init(timestamp: .now, 
                         speed: Measurement(value: 0, unit: .kilometersPerHour), 
-                        distance: Measurement(value: 0, unit: .kilometers))
+                        distance: Measurement(value: 0, unit: .kilometers),
+                        strideLength: SettingsManager.shared.userProfile.strideLength)
         }
         
         let doubleValues = rawStream.map { Double($0) }
@@ -119,7 +139,7 @@ class TreadmillService: TreadmillServiceProtocol {
         let distanceMeasurement = Measurement<UnitLength>(value: distance, unit: .kilometers) + 
                                  Measurement<UnitLength>(value: distanceOffset * 256, unit: .kilometers)
         
-        // Step count is calculated in the RunningState initializer based on distance
-        return .init(timestamp: .now, speed: speedMeasurement, distance: distanceMeasurement)
+        // Step count is calculated in the RunningState initializer based on distance and user's stride length
+        return .init(timestamp: .now, speed: speedMeasurement, distance: distanceMeasurement, strideLength: SettingsManager.shared.userProfile.strideLength)
     }
 }

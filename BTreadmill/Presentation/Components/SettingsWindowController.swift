@@ -20,7 +20,6 @@ class SettingsWindowController: NSWindowController {
     
     deinit {
         // Ensure cleanup
-        statusBarController?.settingsWindow = nil
         window?.delegate = nil
     }
 }
@@ -28,8 +27,7 @@ class SettingsWindowController: NSWindowController {
 // MARK: - NSWindowDelegate
 extension SettingsWindowController: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
-        // Clean up the settings window reference when it's closed
-        statusBarController?.settingsWindow = nil
+        // Clean up
         statusBarController = nil
     }
     
