@@ -105,12 +105,20 @@ class WorkoutManager: ObservableObject {
             return
         }
         
+        let speedToRestore = workout.speedBeforePause
         workout.resume()
         currentWorkout = workout
         
         
-        // Start the treadmill again (it will resume from speed 0)
+        // Start the treadmill again
         treadmillService.sendCommand(.start)
+        
+        // Restore the previous speed if it was greater than 0
+        if speedToRestore > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+                self?.treadmillService.sendCommand(.speed(speedToRestore))
+            }
+        }
     }
     
     func endCurrentWorkout() {

@@ -30,6 +30,7 @@ struct WorkoutSession: Identifiable, Codable {
     var distanceBeforePause: Double = 0 // kilometers
     var stepsBeforePause: Int = 0
     var caloriesBeforePause: Int = 0
+    var speedBeforePause: Double = 0 // km/h - speed to restore when resuming
     
     // Current workout state (for active sessions)
     var currentSpeed: Double = 0 // km/h
@@ -112,6 +113,7 @@ struct WorkoutSession: Identifiable, Codable {
         distanceBeforePause = totalDistance
         stepsBeforePause = totalSteps
         caloriesBeforePause = estimatedCalories
+        speedBeforePause = currentSpeed
         isPaused = true
     }
     
