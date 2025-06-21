@@ -120,11 +120,12 @@ class DataManager {
     }
     
     func loadWorkout(id: UUID) -> WorkoutSession? {
-        let workoutFileURL = workoutsFolderURL.appendingPathComponent("\(id.uuidString).json")
-        
-        guard FileManager.default.fileExists(atPath: workoutFileURL.path) else {
+        // First try to find the file by searching through all workout files
+        guard let fileName = findWorkoutFileName(for: id) else {
             return nil
         }
+        
+        let workoutFileURL = workoutsFolderURL.appendingPathComponent(fileName)
         
         do {
             let data = try Data(contentsOf: workoutFileURL)
@@ -139,7 +140,8 @@ class DataManager {
     }
     
     func saveWorkout(_ workout: WorkoutSession) throws {
-        let workoutFileURL = workoutsFolderURL.appendingPathComponent("\(workout.id.uuidString).json")
+        let fileName = generateWorkoutFileName(for: workout)
+        let workoutFileURL = workoutsFolderURL.appendingPathComponent(fileName)
         
         do {
             let workoutFile = WorkoutDataFile(workout: workout)
@@ -150,7 +152,7 @@ class DataManager {
             let data = try encoder.encode(workoutFile)
             try data.write(to: workoutFileURL)
             
-            logger.info("Successfully saved workout: \(workout.id)")
+            logger.info("Successfully saved workout: \(workout.id) as \(fileName)")
         } catch {
             logger.error("Failed to save workout \(workout.id): \(error.localizedDescription)")
             throw WorkoutDataError.fileAccessError(error.localizedDescription)
@@ -158,15 +160,16 @@ class DataManager {
     }
     
     func deleteWorkout(id: UUID) throws {
-        let workoutFileURL = workoutsFolderURL.appendingPathComponent("\(id.uuidString).json")
-        
-        guard FileManager.default.fileExists(atPath: workoutFileURL.path) else {
+        // Find the actual filename for this workout
+        guard let fileName = findWorkoutFileName(for: id) else {
             return // File doesn't exist, nothing to delete
         }
         
+        let workoutFileURL = workoutsFolderURL.appendingPathComponent(fileName)
+        
         do {
             try FileManager.default.removeItem(at: workoutFileURL)
-            logger.info("Successfully deleted workout: \(id)")
+            logger.info("Successfully deleted workout: \(id) (file: \(fileName))")
         } catch {
             logger.error("Failed to delete workout \(id): \(error.localizedDescription)")
             throw WorkoutDataError.fileAccessError(error.localizedDescription)
@@ -193,6 +196,55 @@ class DataManager {
         }
         
         return workouts.sorted { $0.actualStartDate > $1.actualStartDate }
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    private func generateWorkoutFileName(for workout: WorkoutSession) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+        formatter.timeZone = TimeZone.current
+        
+        let baseName = formatter.string(from: workout.actualStartDate)
+        let fileName = "\(baseName).json"
+        
+        // Check if file already exists and append counter if needed
+        let baseURL = workoutsFolderURL.appendingPathComponent(fileName)
+        if !FileManager.default.fileExists(atPath: baseURL.path) {
+            return fileName
+        }
+        
+        // File exists, append counter
+        var counter = 1
+        while true {
+            let numberedFileName = "\(baseName)_\(counter).json"
+            let numberedURL = workoutsFolderURL.appendingPathComponent(numberedFileName)
+            if !FileManager.default.fileExists(atPath: numberedURL.path) {
+                return numberedFileName
+            }
+            counter += 1
+        }
+    }
+    
+    private func findWorkoutFileName(for workoutId: UUID) -> String? {
+        do {
+            let workoutFiles = try FileManager.default.contentsOfDirectory(at: workoutsFolderURL, includingPropertiesForKeys: nil)
+            
+            for fileURL in workoutFiles where fileURL.pathExtension == "json" {
+                let data = try Data(contentsOf: fileURL)
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                let workoutFile = try decoder.decode(WorkoutDataFile.self, from: data)
+                
+                if workoutFile.workout.id == workoutId {
+                    return fileURL.lastPathComponent
+                }
+            }
+        } catch {
+            logger.error("Failed to search for workout file: \(error.localizedDescription)")
+        }
+        
+        return nil
     }
     
     // MARK: - Import/Export Operations (Legacy single-file support)
