@@ -140,11 +140,11 @@ class StatusBarController: NSObject {
         var text = ""
         
         if let workout = workout, workout.isActive && !workout.isPaused {
-            // Show timer and distance in format: "33m 2.1km"
+            // Show timer and distance in format: "1h23m•6.7km"
             let timeText = formatWorkoutTime(workout.activeTime)
-            let distance = workout.totalDistance.converted(to: settingsManager.userProfile.preferredUnits.distanceUnit)
-            let distanceText = String(format: "%.1f%@", distance.value, distance.unit.symbol)
-            text = " \(timeText) \(distanceText)"
+            let distance = workout.totalDistance.converted(to: .kilometers)
+            let distanceText = String(format: "%.1fkm", distance.value)
+            text = " \(timeText)•\(distanceText)"
         }
         
         // Always show icon with optional text
@@ -157,16 +157,14 @@ class StatusBarController: NSObject {
     }
     
     private func formatWorkoutTime(_ timeInterval: TimeInterval) -> String {
-        let hours = Int(timeInterval) / 3600
-        let minutes = Int(timeInterval) % 3600 / 60
-        let seconds = Int(timeInterval) % 60
+        let totalMinutes = Int(timeInterval) / 60
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
         
         if hours > 0 {
-            return "\(hours)h \(minutes)m \(seconds)s"
-        } else if minutes > 0 {
-            return "\(minutes)m \(seconds)s"
+            return String(format: "%dh%02dm", hours, minutes)
         } else {
-            return "\(seconds)s"
+            return "\(minutes)m"
         }
     }
     

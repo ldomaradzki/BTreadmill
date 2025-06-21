@@ -254,8 +254,10 @@ struct MainMenuView: View {
                 ], spacing: 8) {
                     workoutStatView(title: "Time", value: formatTime(workout.activeTime))
                     workoutStatView(title: "Distance", value: formatDistance(workout.totalDistance))
+                    workoutStatView(title: "Avg Speed", value: formatSpeed(workout.averageSpeed))
+                    workoutStatView(title: "Max Speed", value: formatSpeed(workout.maxSpeed))
+                    workoutStatView(title: "Pace", value: formatPace(workout.averagePace))
                     workoutStatView(title: "Steps", value: "\(workout.totalSteps)")
-                    workoutStatView(title: "Calories", value: "\(workout.estimatedCalories)")
                 }
                 
                 if workout.isPaused {
@@ -305,8 +307,20 @@ struct MainMenuView: View {
     }
     
     private func formatDistance(_ distance: Measurement<UnitLength>) -> String {
-        let converted = distance.converted(to: settingsManager.userProfile.preferredUnits.distanceUnit)
-        return String(format: "%.2f %@", converted.value, converted.unit.symbol)
+        let converted = distance.converted(to: .kilometers)
+        return String(format: "%.2f km", converted.value)
+    }
+    
+    private func formatSpeed(_ speed: Measurement<UnitSpeed>) -> String {
+        let converted = speed.converted(to: .kilometersPerHour)
+        return String(format: "%.1f km/h", converted.value)
+    }
+    
+    private func formatPace(_ pace: TimeInterval) -> String {
+        if pace <= 0 { return "--:--/km" }
+        let minutes = Int(pace)
+        let seconds = Int((pace - Double(minutes)) * 60)
+        return String(format: "%d:%02d/km", minutes, seconds)
     }
     
     private func openSettings() {

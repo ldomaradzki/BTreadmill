@@ -187,13 +187,14 @@ struct WorkoutHistoryView: View {
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible()),
-                GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 8) {
-                statView(title: "Active", value: formatTimeCompact(workout.activeTime))
+                statView(title: "Time", value: formatTimeCompact(workout.activeTime))
                 statView(title: "Distance", value: formatDistance(workout.totalDistance))
                 statView(title: "Steps", value: "\(workout.totalSteps)")
-                statView(title: "Calories", value: "\(workout.estimatedCalories)")
+                statView(title: "Avg Speed", value: formatSpeed(workout.averageSpeed))
+                statView(title: "Max Speed", value: formatSpeed(workout.maxSpeed))
+                statView(title: "Pace", value: formatPace(workout.averagePace))
             }
             
             // Show session duration if different from active time (i.e., there were pauses)
@@ -255,13 +256,25 @@ struct WorkoutHistoryView: View {
     }
     
     private func formatDistance(_ distance: Measurement<UnitLength>) -> String {
-        let converted = distance.converted(to: settingsManager.userProfile.preferredUnits.distanceUnit)
-        return String(format: "%.2f %@", converted.value, converted.unit.symbol)
+        let converted = distance.converted(to: .kilometers)
+        return String(format: "%.2f km", converted.value)
     }
     
     private func formatDistanceCompact(_ distance: Measurement<UnitLength>) -> String {
-        let converted = distance.converted(to: settingsManager.userProfile.preferredUnits.distanceUnit)
-        return String(format: "%.1f%@", converted.value, converted.unit.symbol)
+        let converted = distance.converted(to: .kilometers)
+        return String(format: "%.1fkm", converted.value)
+    }
+    
+    private func formatSpeed(_ speed: Measurement<UnitSpeed>) -> String {
+        let converted = speed.converted(to: .kilometersPerHour)
+        return String(format: "%.1f km/h", converted.value)
+    }
+    
+    private func formatPace(_ pace: TimeInterval) -> String {
+        if pace <= 0 { return "--:--" }
+        let minutes = Int(pace)
+        let seconds = Int((pace - Double(minutes)) * 60)
+        return String(format: "%d:%02d", minutes, seconds)
     }
 }
 

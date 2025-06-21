@@ -8,6 +8,7 @@ struct WorkoutSession: Identifiable, Codable {
     var totalTime: TimeInterval
     var averageSpeed: Measurement<UnitSpeed>
     var maxSpeed: Measurement<UnitSpeed>
+    var averagePace: TimeInterval // minutes per kilometer
     var totalSteps: Int
     var estimatedCalories: Int
     var isPaused: Bool
@@ -35,6 +36,7 @@ struct WorkoutSession: Identifiable, Codable {
         self.totalTime = 0
         self.averageSpeed = Measurement(value: 0, unit: .kilometersPerHour)
         self.maxSpeed = Measurement(value: 0, unit: .kilometersPerHour)
+        self.averagePace = 0
         self.totalSteps = 0
         self.estimatedCalories = 0
         self.isPaused = false
@@ -68,7 +70,9 @@ struct WorkoutSession: Identifiable, Codable {
         let timeDelta = runningState.timestamp.timeIntervalSince(lastUpdateTime)
         
         if !isPaused {
-            totalTime += timeDelta
+            // Apply simulation acceleration factor to time if this is a demo workout
+            let adjustedTimeDelta = isDemo ? timeDelta * 60.0 : timeDelta
+            totalTime += adjustedTimeDelta
             
             // Update distance (accumulate with pre-pause values)
             totalDistance = Measurement(value: distanceBeforePause.value + runningState.distance.converted(to: distanceBeforePause.unit).value, unit: distanceBeforePause.unit)
@@ -86,6 +90,11 @@ struct WorkoutSession: Identifiable, Codable {
             if activeTime > 0 {
                 let avgSpeedValue = totalDistance.converted(to: .kilometers).value / (activeTime / 3600.0)
                 averageSpeed = Measurement(value: avgSpeedValue, unit: .kilometersPerHour)
+                
+                // Calculate average pace (minutes per kilometer)
+                if totalDistance.converted(to: .kilometers).value > 0 {
+                    averagePace = (activeTime / 60.0) / totalDistance.converted(to: .kilometers).value
+                }
             }
             
             // Estimate calories (basic formula - can be improved with user weight)

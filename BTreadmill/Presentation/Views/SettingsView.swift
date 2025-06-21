@@ -75,7 +75,7 @@ struct SettingsView: View {
                             TextField("Weight", value: $settingsManager.userProfile.weight.value, format: .number)
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 80)
-                            Text(settingsManager.userProfile.weight.unit.symbol)
+                            Text("kg")
                                 .frame(width: 40, alignment: .leading)
                         }
                         
@@ -86,31 +86,9 @@ struct SettingsView: View {
                             TextField("Stride", value: $settingsManager.userProfile.strideLength.value, format: .number)
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 80)
-                            Text(settingsManager.userProfile.strideLength.unit.symbol)
+                            Text("m")
                                 .frame(width: 40, alignment: .leading)
                         }
-                    }
-                }
-                
-                Divider()
-                
-                // Units Section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Units")
-                        .font(.headline)
-                        .padding(.bottom, 4)
-                    
-                    HStack {
-                        Text("Unit system:")
-                            .frame(minWidth: 120, alignment: .leading)
-                        Spacer()
-                        Picker("", selection: $settingsManager.userProfile.preferredUnits) {
-                            ForEach(UnitSystem.allCases, id: \.self) { unit in
-                                Text(unit.displayName).tag(unit)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .frame(minWidth: 150, maxWidth: 200)
                     }
                 }
                 
