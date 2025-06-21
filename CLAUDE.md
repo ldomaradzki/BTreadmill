@@ -21,6 +21,7 @@ BTreadmill is a macOS menu bar application for Bluetooth treadmill control with 
 - **BluetoothService**: Handles CoreBluetooth communication with RZ_TreadMill devices, provides connection state and data publishers
 - **TreadmillService**: Interprets Bluetooth data into TreadmillState, executes TreadmillCommand operations
 - **WorkoutManager**: Tracks workout sessions, calculates metrics (steps, calories), manages pause/resume
+- **DataManager**: Persists workout sessions using JSON storage, provides workout history queries
 - **SettingsManager**: Manages user preferences and configuration persistence
 
 ### Menu Bar Integration Pattern
@@ -54,8 +55,86 @@ The app follows a menu bar-first design:
 ## Dependencies and Requirements
 
 **Platform**: macOS 13.0+, Swift 5.9
-**Frameworks**: CoreBluetooth, CoreData, SwiftUI
+**Frameworks**: CoreBluetooth, SwiftUI
 **Build System**: XcodeGen with Manual code signing (development)
 **External Tools**: xcbeautify for formatted build output
 
 The project uses no external package dependencies - all functionality is implemented with system frameworks.
+
+## Data Models
+
+### Core Treadmill Models
+```swift
+enum TreadmillState {
+    case unknown
+    case hibernated
+    case idling
+    case starting
+    case running(RunningState)
+    case stopping(RunningState)
+}
+
+struct RunningState {
+    let timestamp: Date
+    let speed: Measurement<UnitSpeed>
+    let distance: Measurement<UnitLength>
+    let steps: Int
+}
+
+enum TreadmillCommand {
+    case start
+    case speed(Double)  // 1.0-6.0 km/h
+    case stop
+}
+```
+
+### Workout and User Models
+```swift
+struct WorkoutSession {
+    let id: UUID
+    let startTime: Date
+    let endTime: Date?
+    let totalDistance: Measurement<UnitLength>
+    let totalTime: TimeInterval
+    let averageSpeed: Measurement<UnitSpeed>
+    let maxSpeed: Measurement<UnitSpeed>
+    let totalSteps: Int
+    let estimatedCalories: Int
+    let isPaused: Bool
+    let pausedDuration: TimeInterval
+}
+
+struct UserProfile {
+    var weight: Measurement<UnitMass>
+    var strideLength: Measurement<UnitLength>
+    var preferredUnits: UnitSystem
+    var autoConnectEnabled: Bool
+}
+
+enum UnitSystem {
+    case metric
+    case imperial
+}
+```
+
+## Feature Implementation Status
+
+### Core Features (Completed)
+- ✅ Bluetooth treadmill connection and control
+- ✅ Real-time workout tracking with pause/resume
+- ✅ JSON-based workout history persistence
+- ✅ User settings and preferences management
+- ✅ Menu bar interface with popover controls
+- ✅ Workout history view with session details
+
+### Data Persistence
+- **Storage Format**: JSON files for workout sessions and user settings
+- **DataManager**: Handles all file I/O operations and data queries
+- **Workout Recovery**: Automatic recovery of interrupted workout sessions
+- **Export Capability**: JSON export of workout data
+
+### User Interface Components
+- **Status Bar**: Shows connection status and optional workout metrics
+- **Main Menu Popover**: Primary control interface with treadmill controls and current workout display
+- **Settings Window**: Separate window for user profile and app configuration
+- **Workout History**: Chronological list of completed workouts with detailed metrics
