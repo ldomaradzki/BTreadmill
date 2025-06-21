@@ -27,26 +27,22 @@ struct MainMenuView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Header with connection status and action buttons
-                headerView
-                
-                Divider()
-                
-                // Treadmill Controls (always visible)
-                treadmillControlsView
-                
-                Divider()
-                
-                // Current Workout Display
-                currentWorkoutView
-                
-                Spacer(minLength: 8)
-            }
+        VStack(spacing: 0) {
+            // Header with connection status and action buttons
+            headerView
+            
+            Divider()
+            
+            // Treadmill Controls (always visible)
+            treadmillControlsView
+            
+            Divider()
+            
+            // Current Workout Display
+            currentWorkoutView
         }
         .frame(width: 300)
-        .frame(maxHeight: 500, alignment: .top)
+        .fixedSize(horizontal: false, vertical: true)
         .onReceive(treadmillService.isConnectedPublisher) { connected in
             isConnected = connected
         }
