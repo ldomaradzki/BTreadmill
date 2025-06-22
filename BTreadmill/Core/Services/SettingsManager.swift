@@ -68,7 +68,7 @@ class SettingsManager: ObservableObject {
     }
     
     func importData(from url: URL) throws {
-        let (importedProfile, importedWorkouts) = try dataManager.importDataLegacy(from: url)
+        let (importedProfile, importedWorkouts, importedPlans) = try dataManager.importDataLegacy(from: url)
         
         // Save imported config
         self.userProfile = importedProfile
@@ -76,6 +76,11 @@ class SettingsManager: ObservableObject {
         // Save imported workouts individually and update local history
         for workout in importedWorkouts {
             try dataManager.saveWorkout(workout)
+        }
+        
+        // Save imported workout plans
+        for plan in importedPlans {
+            try dataManager.saveUserWorkoutPlan(plan)
         }
         
         // Reload workout history from files to ensure consistency

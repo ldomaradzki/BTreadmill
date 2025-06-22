@@ -15,6 +15,33 @@ struct WorkoutHistoryView: View {
         return grouped.sorted { $0.key > $1.key } // Most recent first
     }
     
+    // Calendar with Monday as first weekday
+    private var mondayFirstCalendar: Calendar {
+        var calendar = Calendar.current
+        calendar.firstWeekday = 2 // Monday = 2, Sunday = 1
+        return calendar
+    }
+    
+    // Monthly heatmap data
+    private var monthlyHeatmapData: [Date: Double] {
+        let calendar = Calendar.current
+        let currentMonth = calendar.dateInterval(of: .month, for: Date())!
+        
+        let workoutsInMonth = workoutManager.workoutHistory.filter { workout in
+            currentMonth.contains(workout.actualStartDate)
+        }
+        
+        let grouped = Dictionary(grouping: workoutsInMonth) { workout in
+            calendar.startOfDay(for: workout.actualStartDate)
+        }
+        
+        return grouped.mapValues { workouts in
+            workouts.reduce(0.0) { result, workout in
+                result + workout.totalDistance
+            }
+        }
+    }
+    
     // Daily statistics
     private func dayStats(for workouts: [WorkoutSession]) -> (duration: TimeInterval, distance: Double, calories: Int) {
         let totalDuration = workouts.reduce(0) { $0 + $1.activeTime }
@@ -74,6 +101,113 @@ struct WorkoutHistoryView: View {
         .padding()
     }
     
+    @ViewBuilder
+    private func monthlyHeatmapView(scrollTo: @escaping (String) -> Void) -> some View {
+        let calendar = mondayFirstCalendar
+        let monthName = DateFormatter().monthSymbols[calendar.component(.month, from: Date()) - 1]
+        let year = calendar.component(.year, from: Date())
+        
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(monthName) \(String(year))")
+                .font(.headline)
+                .fontWeight(.medium)
+            
+            LazyVGrid(columns: Array(repeating: GridItem(.fixed(40), spacing: 1), count: 7), spacing: 1) {
+                // Week day headers (Monday first)
+                let weekdaySymbols = Array(calendar.shortWeekdaySymbols[1...] + calendar.shortWeekdaySymbols[...0])
+                ForEach(weekdaySymbols, id: \.self) { day in
+                    Text(day)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .frame(width: 40, height: 20)
+                }
+                
+                // Month days
+                ForEach(daysInCurrentMonth(), id: \.self) { date in
+                    heatmapDay(date: date, scrollTo: scrollTo)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.controlBackgroundColor).opacity(0.3))
+        .cornerRadius(8)
+    }
+    
+    @ViewBuilder
+    private func heatmapDay(date: Date, scrollTo: @escaping (String) -> Void) -> some View {
+        let distance = monthlyHeatmapData[date] ?? 0.0
+        let intensity = min(distance / 10.0, 1.0)
+        let isCurrentMonth = Calendar.current.isDate(date, equalTo: Date(), toGranularity: .month)
+        let hasData = distance > 0
+        let dayId = "day-\(Calendar.current.startOfDay(for: date).timeIntervalSince1970)"
+        
+        Button(action: {
+            if hasData {
+                scrollTo(dayId)
+            }
+        }) {
+            RoundedRectangle(cornerRadius: 3)
+                .fill(heatmapColor(for: intensity))
+                .frame(width: 40, height: 28)
+                .opacity(isCurrentMonth ? 1.0 : 0.3)
+                .overlay(
+                    Text("\(Calendar.current.component(.day, from: date))")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(intensity > 0.5 ? .white : .primary)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 3)
+                        .stroke(hasData ? Color.primary.opacity(0.3) : Color.clear, lineWidth: hasData ? 1 : 0)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(!hasData)
+        .help(heatmapTooltip(for: date, distance: distance, clickable: hasData))
+    }
+    
+    private func daysInCurrentMonth() -> [Date] {
+        let calendar = mondayFirstCalendar
+        let currentMonth = calendar.dateInterval(of: .month, for: Date())!
+        let startOfMonth = currentMonth.start
+        
+        // Get first day of week for the month
+        let firstWeekday = calendar.component(.weekday, from: startOfMonth)
+        let daysToSubtract = (firstWeekday - calendar.firstWeekday + 7) % 7
+        let startDate = calendar.date(byAdding: .day, value: -daysToSubtract, to: startOfMonth)!
+        
+        var dates: [Date] = []
+        var currentDate = startDate
+        
+        // Generate 42 days (6 weeks) to fill the grid
+        for _ in 0..<42 {
+            dates.append(currentDate)
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
+        }
+        
+        return dates
+    }
+    
+    private func heatmapColor(for intensity: Double) -> Color {
+        if intensity == 0 {
+            return Color(.controlBackgroundColor)
+        }
+        
+        let baseColor = Color.green
+        return baseColor.opacity(0.3 + (intensity * 0.7))
+    }
+    
+    private func heatmapTooltip(for date: Date, distance: Double, clickable: Bool = false) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        
+        if distance > 0 {
+            let baseText = "\(formatter.string(from: date)): \(String(format: "%.1f", distance)) km"
+            return clickable ? "\(baseText) - Click to view details" : baseText
+        } else {
+            return "\(formatter.string(from: date)): No workout"
+        }
+    }
+    
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Image("treadmill")
@@ -95,13 +229,23 @@ struct WorkoutHistoryView: View {
     }
     
     private var historyListView: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
-                ForEach(groupedWorkouts, id: \.0) { date, workouts in
-                    daySection(date: date, workouts: workouts)
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 16) {
+                    // Monthly Heatmap at top of scroll view
+                    monthlyHeatmapView { dayId in
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            proxy.scrollTo(dayId, anchor: .top)
+                        }
+                    }
+                    
+                    ForEach(groupedWorkouts, id: \.0) { date, workouts in
+                        daySection(date: date, workouts: workouts)
+                            .id("day-\(Calendar.current.startOfDay(for: date).timeIntervalSince1970)")
+                    }
                 }
+                .padding()
             }
-            .padding()
         }
     }
     

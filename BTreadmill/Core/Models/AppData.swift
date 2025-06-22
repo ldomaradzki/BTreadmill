@@ -6,15 +6,17 @@ struct AppData: Codable {
     let version: Int
     let userProfile: UserProfile
     let workoutHistory: [WorkoutSession]
+    let workoutPlans: [WorkoutPlan]
     let createdAt: Date
     let lastModified: Date
     
-    static let currentVersion = 1
+    static let currentVersion = 2
     
-    init(userProfile: UserProfile, workoutHistory: [WorkoutSession]) {
+    init(userProfile: UserProfile, workoutHistory: [WorkoutSession], workoutPlans: [WorkoutPlan] = []) {
         self.version = AppData.currentVersion
         self.userProfile = userProfile
         self.workoutHistory = workoutHistory
+        self.workoutPlans = workoutPlans
         self.createdAt = Date()
         self.lastModified = Date()
     }
@@ -30,6 +32,13 @@ struct AppData: Codable {
         case 1:
             self.userProfile = try container.decode(UserProfile.self, forKey: .userProfile)
             self.workoutHistory = try container.decode([WorkoutSession].self, forKey: .workoutHistory)
+            self.workoutPlans = [] // Version 1 didn't have workout plans
+            self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+            self.lastModified = try container.decode(Date.self, forKey: .lastModified)
+        case 2:
+            self.userProfile = try container.decode(UserProfile.self, forKey: .userProfile)
+            self.workoutHistory = try container.decode([WorkoutSession].self, forKey: .workoutHistory)
+            self.workoutPlans = try container.decodeIfPresent([WorkoutPlan].self, forKey: .workoutPlans) ?? []
             self.createdAt = try container.decode(Date.self, forKey: .createdAt)
             self.lastModified = try container.decode(Date.self, forKey: .lastModified)
         default:
@@ -42,6 +51,7 @@ struct AppData: Codable {
         try container.encode(version, forKey: .version)
         try container.encode(userProfile, forKey: .userProfile)
         try container.encode(workoutHistory, forKey: .workoutHistory)
+        try container.encode(workoutPlans, forKey: .workoutPlans)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(Date(), forKey: .lastModified) // Always update lastModified on save
     }
@@ -50,6 +60,7 @@ struct AppData: Codable {
         case version
         case userProfile
         case workoutHistory
+        case workoutPlans
         case createdAt
         case lastModified
     }

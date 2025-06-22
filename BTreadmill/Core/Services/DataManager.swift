@@ -9,11 +9,13 @@ class DataManager {
     private let dataFolderName = "BTreadmillData"
     private let configFileName = "config.json"
     private let workoutsFolderName = "workouts"
+    private let plansFolderName = "plans"
     
     private let documentsDirectory: URL
     private let dataFolderURL: URL
     private let configFileURL: URL
     private let workoutsFolderURL: URL
+    private let plansFolderURL: URL
     
     // Legacy single file (for migration)
     private let legacyDataFileName = "btreadmill_data.json"
@@ -25,6 +27,7 @@ class DataManager {
         dataFolderURL = documentsDirectory.appendingPathComponent(dataFolderName)
         configFileURL = dataFolderURL.appendingPathComponent(configFileName)
         workoutsFolderURL = dataFolderURL.appendingPathComponent(workoutsFolderName)
+        plansFolderURL = dataFolderURL.appendingPathComponent(plansFolderName)
         legacyDataFileURL = documentsDirectory.appendingPathComponent(legacyDataFileName)
         
         
@@ -39,6 +42,7 @@ class DataManager {
         do {
             try FileManager.default.createDirectory(at: dataFolderURL, withIntermediateDirectories: true)
             try FileManager.default.createDirectory(at: workoutsFolderURL, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: plansFolderURL, withIntermediateDirectories: true)
         } catch {
             logger.error("Failed to create data directories: \(error.localizedDescription)")
         }
@@ -188,6 +192,27 @@ class DataManager {
         return workouts.sorted { $0.actualStartDate > $1.actualStartDate }
     }
     
+    func loadUserWorkoutPlans() -> [WorkoutPlan] {
+        var plans: [WorkoutPlan] = []
+        
+        do {
+            let planFiles = try FileManager.default.contentsOfDirectory(at: plansFolderURL, includingPropertiesForKeys: nil)
+            
+            for fileURL in planFiles where fileURL.pathExtension == "json" {
+                let data = try Data(contentsOf: fileURL)
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                let plan = try decoder.decode(WorkoutPlan.self, from: data)
+                plans.append(plan)
+            }
+            
+        } catch {
+            logger.error("Failed to load user workout plans: \(error.localizedDescription)")
+        }
+        
+        return plans.sorted { $0.name < $1.name }
+    }
+    
     // MARK: - Private Helper Methods
     
     private func generateWorkoutFileName(for workout: WorkoutSession) -> String {
@@ -241,7 +266,8 @@ class DataManager {
     // MARK: - Import/Export Operations (Legacy single-file support)
     
     func exportDataLegacy(to url: URL, userProfile: UserProfile, workouts: [WorkoutSession]) throws {
-        let appData = AppData(userProfile: userProfile, workoutHistory: workouts)
+        let userPlans = loadUserWorkoutPlans()
+        let appData = AppData(userProfile: userProfile, workoutHistory: workouts, workoutPlans: userPlans)
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -251,7 +277,7 @@ class DataManager {
         
     }
     
-    func importDataLegacy(from url: URL) throws -> (UserProfile, [WorkoutSession]) {
+    func importDataLegacy(from url: URL) throws -> (UserProfile, [WorkoutSession], [WorkoutPlan]) {
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw AppDataError.fileNotFound
         }
@@ -263,11 +289,29 @@ class DataManager {
             
             let appData = try decoder.decode(AppData.self, from: data)
             
-            return (appData.userProfile, appData.workoutHistory)
+            return (appData.userProfile, appData.workoutHistory, appData.workoutPlans)
         } catch DecodingError.dataCorrupted(_) {
             throw AppDataError.corruptedData
         } catch {
             throw AppDataError.fileAccessError(error.localizedDescription)
+        }
+    }
+    
+    func saveUserWorkoutPlan(_ plan: WorkoutPlan) throws {
+        let fileName = "\(plan.id).json"
+        let planFileURL = plansFolderURL.appendingPathComponent(fileName)
+        
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            
+            let data = try encoder.encode(plan)
+            try data.write(to: planFileURL)
+            
+        } catch {
+            logger.error("Failed to save workout plan \(plan.id): \(error.localizedDescription)")
+            throw WorkoutDataError.fileAccessError(error.localizedDescription)
         }
     }
     
@@ -283,6 +327,10 @@ class DataManager {
     
     func getWorkoutsFolderURL() -> URL {
         return workoutsFolderURL
+    }
+    
+    func getPlansFolderURL() -> URL {
+        return plansFolderURL
     }
     
     func dataFolderExists() -> Bool {
