@@ -184,7 +184,11 @@ struct MainMenuView: View {
                     Picker("Workout Plan", selection: $selectedPlan) {
                         Text("---").tag(nil as WorkoutPlan?)
                         ForEach(planManager.availablePlans) { plan in
-                            Text(plan.name).tag(plan as WorkoutPlan?)
+                            if let duration = plan.estimatedDuration {
+                                Text("\(plan.name) (\(formatTime(duration)))").tag(plan as WorkoutPlan?)
+                            } else {
+                                Text(plan.name).tag(plan as WorkoutPlan?)
+                            }
                         }
                     }
                     .pickerStyle(.menu)

@@ -1,0 +1,137 @@
+{
+  "id": "research-based-hiit",
+  "name": "Japanese walking HIIT",
+  "description": "Evidence-based interval walking protocol from Nemoto et al. (2007) study - 5 cycles of 3-minute low/high intensity intervals shown to improve aerobic capacity and muscle strength in older adults. https://www.mayoclinicproceedings.org/article/S0025-6196(11)61303-7/abstract",
+  "segments": [
+    {
+      "type": "fixed",
+      "data": {
+        "id": "warmup",
+        "name": "Warm-up",
+        "speed": 2.0,
+        "duration": 180,
+        "transitionType": "immediate"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "low-intensity-1",
+        "name": "Low Intensity (40% effort)",
+        "speed": 2.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "high-intensity-1",
+        "name": "High Intensity (70%+ effort)",
+        "speed": 4.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "low-intensity-2",
+        "name": "Low Intensity (40% effort)",
+        "speed": 2.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "high-intensity-2",
+        "name": "High Intensity (70%+ effort)",
+        "speed": 4.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "low-intensity-3",
+        "name": "Low Intensity (40% effort)",
+        "speed": 2.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "high-intensity-3",
+        "name": "High Intensity (70%+ effort)",
+        "speed": 4.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "low-intensity-4",
+        "name": "Low Intensity (40% effort)",
+        "speed": 2.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "high-intensity-4",
+        "name": "High Intensity (70%+ effort)",
+        "speed": 4.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "low-intensity-5",
+        "name": "Low Intensity (40% effort)",
+        "speed": 2.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "high-intensity-5",
+        "name": "High Intensity (70%+ effort)",
+        "speed": 4.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "cooldown",
+        "name": "Cool-down",
+        "speed": 1.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    }
+  ],
+  "globalSettings": {
+    "maxDuration": null,
+    "autoStopOnCompletion": true,
+    "allowManualOverride": true,
+    "pauseBehavior": "holdPosition",
+    "warmupSpeed": null,
+    "cooldownSpeed": null,
+    "emergencyStopEnabled": true
+  },
+  "tags": ["research-based", "hiit", "evidence-based", "intervals", "cardiovascular"]
+}

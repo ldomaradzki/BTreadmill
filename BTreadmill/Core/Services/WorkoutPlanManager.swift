@@ -85,8 +85,9 @@ class WorkoutPlanManager: ObservableObject {
         }
         
         // Try to find JSON files directly in Resources
-        if let jsonFiles = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) {
-            print("📄 Found \(jsonFiles.count) JSON files in bundle")
+        if let allJsonFiles = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) {
+            let jsonFiles = allJsonFiles.filter { !$0.lastPathComponent.contains(".sample.") }
+            print("📄 Found \(jsonFiles.count) active JSON files in bundle (filtered out sample files)")
             var plans: [WorkoutPlan] = []
             
             for file in jsonFiles {
@@ -115,7 +116,7 @@ class WorkoutPlanManager: ObservableObject {
     
     private func loadPlansFromPath(_ path: URL) throws -> [WorkoutPlan] {
         let jsonFiles = try fileManager.contentsOfDirectory(at: path, includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "json" }
+            .filter { $0.pathExtension == "json" && !$0.lastPathComponent.contains(".sample.") }
         
         var plans: [WorkoutPlan] = []
         

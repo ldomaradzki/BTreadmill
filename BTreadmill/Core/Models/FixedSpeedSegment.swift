@@ -32,15 +32,8 @@ struct FixedSpeedSegment: WorkoutSegment {
         let isComplete = time >= duration
         let remaining = max(0, duration - time)
         
-        // Handle transition timing
-        let actualSpeed: Double
-        if transitionType == .gradual && time < transitionType.transitionDuration {
-            // Gradual transition over transition duration
-            let transitionProgress = min(time / transitionType.transitionDuration, 1.0)
-            actualSpeed = speed * transitionProgress
-        } else {
-            actualSpeed = speed
-        }
+        // Since treadmill handles speed transitions automatically, always use target speed
+        let actualSpeed = speed
         
         let displayText: String
         if isComplete {
