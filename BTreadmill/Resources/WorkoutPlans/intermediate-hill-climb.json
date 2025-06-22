@@ -1,0 +1,91 @@
+{
+  "id": "intermediate-hill-climb",
+  "name": "Hill Climb",
+  "description": "Progressive hill simulation with gradual speed increases and decreases",
+  "segments": [
+    {
+      "type": "fixed",
+      "data": {
+        "id": "warmup",
+        "name": "Warm-up",
+        "speed": 2.0,
+        "duration": 180,
+        "transitionType": "immediate"
+      }
+    },
+    {
+      "type": "ramp",
+      "data": {
+        "id": "uphill",
+        "name": "Uphill Climb",
+        "startSpeed": 2.0,
+        "endSpeed": 5.0,
+        "duration": 360,
+        "rampType": "linear"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "peak",
+        "name": "Peak Plateau",
+        "speed": 5.0,
+        "duration": 120,
+        "transitionType": "immediate"
+      }
+    },
+    {
+      "type": "ramp",
+      "data": {
+        "id": "downhill1",
+        "name": "Downhill Descent",
+        "startSpeed": 5.0,
+        "endSpeed": 2.5,
+        "duration": 240,
+        "rampType": "logarithmic"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "valley",
+        "name": "Valley Walk",
+        "speed": 2.5,
+        "duration": 180,
+        "transitionType": "immediate"
+      }
+    },
+    {
+      "type": "ramp",
+      "data": {
+        "id": "uphill2",
+        "name": "Second Hill",
+        "startSpeed": 2.5,
+        "endSpeed": 4.5,
+        "duration": 300,
+        "rampType": "exponential"
+      }
+    },
+    {
+      "type": "ramp",
+      "data": {
+        "id": "final",
+        "name": "Final Descent",
+        "startSpeed": 4.5,
+        "endSpeed": 1.5,
+        "duration": 300,
+        "rampType": "easeInOut"
+      }
+    }
+  ],
+  "globalSettings": {
+    "maxDuration": null,
+    "autoStopOnCompletion": true,
+    "allowManualOverride": true,
+    "pauseBehavior": "holdPosition",
+    "warmupSpeed": null,
+    "cooldownSpeed": null,
+    "emergencyStopEnabled": true
+  },
+  "tags": ["intermediate", "hill-training", "endurance", "progressive"]
+}

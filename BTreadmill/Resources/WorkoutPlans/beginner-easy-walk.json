@@ -1,0 +1,47 @@
+{
+  "id": "beginner-easy-walk",
+  "name": "Easy Walk",
+  "description": "A gentle 15-minute walk perfect for beginners or recovery days",
+  "segments": [
+    {
+      "type": "fixed",
+      "data": {
+        "id": "warmup",
+        "name": "Warm-up",
+        "speed": 1.5,
+        "duration": 180,
+        "transitionType": "immediate"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "steady",
+        "name": "Steady Walk",
+        "speed": 2.5,
+        "duration": 600,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "cooldown",
+        "name": "Cool-down",
+        "speed": 1.5,
+        "duration": 120,
+        "transitionType": "gradual"
+      }
+    }
+  ],
+  "globalSettings": {
+    "maxDuration": null,
+    "autoStopOnCompletion": true,
+    "allowManualOverride": true,
+    "pauseBehavior": "holdPosition",
+    "warmupSpeed": null,
+    "cooldownSpeed": null,
+    "emergencyStopEnabled": true
+  },
+  "tags": ["beginner", "recovery", "gentle"]
+}

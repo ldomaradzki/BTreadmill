@@ -14,6 +14,10 @@ class WorkoutManager: ObservableObject {
     @Published var isWorkoutActive: Bool = false
     @Published var workoutHistory: [WorkoutSession] = []
     
+    // Plan execution
+    @Published var planExecutor: WorkoutPlanExecutor?
+    @Published var currentExecutingPlan: WorkoutPlan?
+    
     // Workout statistics
     private let currentWorkoutSubject = CurrentValueSubject<WorkoutSession?, Never>(nil)
     var currentWorkoutPublisher: AnyPublisher<WorkoutSession?, Never> {
@@ -25,6 +29,9 @@ class WorkoutManager: ObservableObject {
     }
     
     init() {
+        // Initialize plan executor
+        planExecutor = WorkoutPlanExecutor(workoutManager: self)
+        
         setupSubscriptions()
         
         // Load existing workout history from persistent storage after services are set up
@@ -85,6 +92,22 @@ class WorkoutManager: ObservableObject {
         treadmillService.sendCommand(.start)
     }
     
+    func startWorkoutWithPlan(_ plan: WorkoutPlan) {
+        guard currentWorkout == nil else {
+            logger.warning("Attempted to start workout with plan while one is already active")
+            return
+        }
+        
+        // Start regular workout first
+        startWorkout()
+        
+        // Then start plan execution
+        currentExecutingPlan = plan
+        planExecutor?.startExecution(plan: plan)
+        
+        logger.info("Started workout with plan: \(plan.name)")
+    }
+    
     func pauseWorkout() {
         guard var workout = currentWorkout, !workout.isPaused else {
             logger.warning("Attempted to pause workout that is not active or already paused")
@@ -94,6 +117,8 @@ class WorkoutManager: ObservableObject {
         workout.pause()
         currentWorkout = workout
         
+        // Pause plan execution if active
+        planExecutor?.pauseExecution()
         
         // Stop the treadmill
         treadmillService.sendCommand(.stop)
@@ -109,12 +134,15 @@ class WorkoutManager: ObservableObject {
         workout.resume()
         currentWorkout = workout
         
+        // Resume plan execution if active
+        planExecutor?.resumeExecution()
         
         // Start the treadmill again
         treadmillService.sendCommand(.start)
         
-        // Restore the previous speed if it was greater than 0
-        if speedToRestore > 0 {
+        // For plan workouts, the plan executor will handle speed control
+        // For free workouts, restore the previous speed
+        if currentExecutingPlan == nil && speedToRestore > 0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
                 self?.treadmillService.sendCommand(.speed(speedToRestore))
             }
@@ -130,6 +158,9 @@ class WorkoutManager: ObservableObject {
         workout.end()
         isWorkoutActive = false
         
+        // Stop plan execution if active
+        planExecutor?.stopExecution()
+        currentExecutingPlan = nil
         
         // Save the completed workout
         saveWorkout(workout)
@@ -150,6 +181,15 @@ class WorkoutManager: ObservableObject {
         let clampedSpeed = speed.clamped(to: 1.0, and: 6.0)
         treadmillService.sendCommand(.speed(clampedSpeed))
         
+    }
+    
+    func skipCurrentSegment() {
+        guard currentExecutingPlan != nil else {
+            logger.warning("Attempted to skip segment but no plan is executing")
+            return
+        }
+        
+        planExecutor?.skipCurrentSegment()
     }
     
     // MARK: - Private Methods

@@ -1,0 +1,127 @@
+{
+  "id": "advanced-hiit",
+  "name": "HIIT Challenge",
+  "description": "Intense 15-minute HIIT workout with short bursts of maximum speed",
+  "segments": [
+    {
+      "type": "fixed",
+      "data": {
+        "id": "warmup",
+        "name": "Warm-up",
+        "speed": 2.5,
+        "duration": 120,
+        "transitionType": "immediate"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "sprint1",
+        "name": "Sprint 1",
+        "speed": 6.0,
+        "duration": 30,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "recovery1",
+        "name": "Active Recovery",
+        "speed": 2.0,
+        "duration": 90,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "sprint2",
+        "name": "Sprint 2",
+        "speed": 6.0,
+        "duration": 30,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "recovery2",
+        "name": "Active Recovery",
+        "speed": 2.0,
+        "duration": 90,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "sprint3",
+        "name": "Sprint 3",
+        "speed": 6.0,
+        "duration": 30,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "recovery3",
+        "name": "Active Recovery",
+        "speed": 2.0,
+        "duration": 90,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "sprint4",
+        "name": "Sprint 4",
+        "speed": 6.0,
+        "duration": 30,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "recovery4",
+        "name": "Active Recovery",
+        "speed": 2.0,
+        "duration": 90,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "sprint5",
+        "name": "Sprint 5",
+        "speed": 6.0,
+        "duration": 30,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "cooldown",
+        "name": "Cool-down",
+        "speed": 1.5,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    }
+  ],
+  "globalSettings": {
+    "maxDuration": null,
+    "autoStopOnCompletion": true,
+    "allowManualOverride": true,
+    "pauseBehavior": "holdPosition",
+    "warmupSpeed": null,
+    "cooldownSpeed": null,
+    "emergencyStopEnabled": true
+  },
+  "tags": ["advanced", "hiit", "intense", "sprint"]
+}

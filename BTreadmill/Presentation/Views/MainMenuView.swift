@@ -5,6 +5,7 @@ import Combine
 struct MainMenuView: View {
     @ObservedObject var workoutManager: WorkoutManager
     @ObservedObject var settingsManager: SettingsManager
+    @StateObject private var planManager = WorkoutPlanManager()
     
     private var treadmillService: TreadmillServiceProtocol {
         return TreadmillService.shared
@@ -15,6 +16,7 @@ struct MainMenuView: View {
     @State private var currentSpeed: Double = 1.0
     @State private var showingWorkoutHistory = false
     @State private var showingSettings = false
+    @State private var selectedPlan: WorkoutPlan? = nil
     
     // Computed property to determine if treadmill controls should be enabled
     private var isTreadmillReady: Bool {
@@ -166,6 +168,42 @@ struct MainMenuView: View {
                 }
             }
             
+            // Workout Plan Selection (only show when not active)
+            if !workoutManager.isWorkoutActive {
+                VStack(spacing: 6) {
+                    HStack {
+                        Text("Workout Plan")
+                        Spacer()
+                        if planManager.isLoading {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                    }
+                    .font(.caption)
+                    
+                    Picker("Workout Plan", selection: $selectedPlan) {
+                        Text("---").tag(nil as WorkoutPlan?)
+                        ForEach(planManager.availablePlans) { plan in
+                            Text(plan.name).tag(plan as WorkoutPlan?)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    if let plan = selectedPlan {
+                        HStack {
+                            if let duration = plan.estimatedDuration {
+                                Text("Duration: \(formatTime(duration))")
+                            }
+                            Spacer()
+                            Text("Segments: \(plan.segments.count)")
+                        }
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    }
+                }
+            }
+            
             // Start/Stop Buttons
             HStack(spacing: 12) {
                 if workoutManager.isWorkoutActive {
@@ -189,10 +227,14 @@ struct MainMenuView: View {
                     .buttonStyle(.bordered)
                     .tint(.red)
                 } else {
-                    Button("Start Workout") {
-                        workoutManager.startWorkout()
-                        currentSpeed = settingsManager.userProfile.defaultSpeed
-                        workoutManager.setTreadmillSpeed(currentSpeed)
+                    Button(selectedPlan != nil ? "Start Plan" : "Start Workout") {
+                        if let plan = selectedPlan {
+                            startWorkoutWithPlan(plan)
+                        } else {
+                            workoutManager.startWorkout()
+                            currentSpeed = settingsManager.userProfile.defaultSpeed
+                            workoutManager.setTreadmillSpeed(currentSpeed)
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(!isTreadmillReady)
@@ -245,6 +287,71 @@ struct MainMenuView: View {
                         .background(Color.orange)
                         .cornerRadius(4)
                 }
+                
+                if workoutManager.currentExecutingPlan != nil {
+                    Text("PLAN")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.blue)
+                        .cornerRadius(4)
+                }
+            }
+            
+            // Plan execution info
+            if let planExecutor = workoutManager.planExecutor,
+               let plan = workoutManager.currentExecutingPlan,
+               planExecutor.isExecuting {
+                VStack(spacing: 4) {
+                    HStack {
+                        Text(plan.name)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        Spacer()
+                        if planExecutor.isPaused {
+                            Text("PAUSED")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                        }
+                    }
+                    
+                    if !planExecutor.currentSegmentDisplayText.isEmpty {
+                        HStack {
+                            Text(planExecutor.currentSegmentDisplayText)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(planExecutor.progressDisplayText)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    if !planExecutor.remainingTimeDisplayText.isEmpty {
+                        HStack {
+                            Spacer()
+                            Text(planExecutor.remainingTimeDisplayText)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    // Skip segment button for plan workouts
+                    if !planExecutor.isPaused {
+                        HStack {
+                            Spacer()
+                            Button("Skip Segment") {
+                                workoutManager.skipCurrentSegment()
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .font(.caption2)
+                        }
+                    }
+                }
+                .padding(.top, 4)
             }
             
             if let workout = workoutManager.currentWorkout {
@@ -327,5 +434,14 @@ struct MainMenuView: View {
     
     private func openSettings() {
         showingSettings = true
+    }
+    
+    private func startWorkoutWithPlan(_ plan: WorkoutPlan) {
+        workoutManager.startWorkoutWithPlan(plan)
+        print("🎯 Starting workout with plan: \(plan.name)")
+        print("📋 Plan has \(plan.segments.count) segments")
+        if let duration = plan.estimatedDuration {
+            print("⏱️ Estimated duration: \(formatTime(duration))")
+        }
     }
 }

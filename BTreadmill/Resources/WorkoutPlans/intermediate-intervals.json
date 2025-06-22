@@ -1,0 +1,117 @@
+{
+  "id": "intermediate-intervals",
+  "name": "Interval Training",
+  "description": "20-minute interval workout alternating between moderate and fast walking",
+  "segments": [
+    {
+      "type": "fixed",
+      "data": {
+        "id": "warmup",
+        "name": "Warm-up",
+        "speed": 2.0,
+        "duration": 180,
+        "transitionType": "immediate"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "moderate1",
+        "name": "Moderate Walk",
+        "speed": 3.0,
+        "duration": 120,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "fast1",
+        "name": "Fast Walk",
+        "speed": 4.5,
+        "duration": 60,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "recovery1",
+        "name": "Recovery",
+        "speed": 2.5,
+        "duration": 60,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "fast2",
+        "name": "Fast Walk",
+        "speed": 4.5,
+        "duration": 60,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "recovery2",
+        "name": "Recovery",
+        "speed": 2.5,
+        "duration": 60,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "fast3",
+        "name": "Fast Walk",
+        "speed": 4.5,
+        "duration": 60,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "recovery3",
+        "name": "Recovery",
+        "speed": 2.5,
+        "duration": 60,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "fast4",
+        "name": "Fast Walk",
+        "speed": 4.5,
+        "duration": 60,
+        "transitionType": "gradual"
+      }
+    },
+    {
+      "type": "fixed",
+      "data": {
+        "id": "cooldown",
+        "name": "Cool-down",
+        "speed": 2.0,
+        "duration": 180,
+        "transitionType": "gradual"
+      }
+    }
+  ],
+  "globalSettings": {
+    "maxDuration": null,
+    "autoStopOnCompletion": true,
+    "allowManualOverride": true,
+    "pauseBehavior": "holdPosition",
+    "warmupSpeed": null,
+    "cooldownSpeed": null,
+    "emergencyStopEnabled": true
+  },
+  "tags": ["intermediate", "intervals", "cardio"]
+}
