@@ -5,11 +5,18 @@ struct WorkoutHistoryView: View {
     @ObservedObject var settingsManager: SettingsManager
     @Environment(\.dismiss) private var dismiss
     @State private var workoutToDelete: WorkoutSession?
+    @State private var selectedMonth: Date = Date()
     
-    // Group workouts by day
+    // Group workouts by day (filtered by selected month)
     private var groupedWorkouts: [(Date, [WorkoutSession])] {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: workoutManager.workoutHistory) { workout in
+        let selectedMonthInterval = calendar.dateInterval(of: .month, for: selectedMonth)!
+        
+        let filteredWorkouts = workoutManager.workoutHistory.filter { workout in
+            selectedMonthInterval.contains(workout.actualStartDate)
+        }
+        
+        let grouped = Dictionary(grouping: filteredWorkouts) { workout in
             calendar.startOfDay(for: workout.actualStartDate)
         }
         return grouped.sorted { $0.key > $1.key } // Most recent first
@@ -22,13 +29,13 @@ struct WorkoutHistoryView: View {
         return calendar
     }
     
-    // Monthly heatmap data
+    // Monthly heatmap data (for selected month)
     private var monthlyHeatmapData: [Date: Double] {
         let calendar = Calendar.current
-        let currentMonth = calendar.dateInterval(of: .month, for: Date())!
+        let selectedMonthInterval = calendar.dateInterval(of: .month, for: selectedMonth)!
         
         let workoutsInMonth = workoutManager.workoutHistory.filter { workout in
-            currentMonth.contains(workout.actualStartDate)
+            selectedMonthInterval.contains(workout.actualStartDate)
         }
         
         let grouped = Dictionary(grouping: workoutsInMonth) { workout in
@@ -68,6 +75,10 @@ struct WorkoutHistoryView: View {
         }
         .frame(width: 400, height: 500)
         .background(Color(.windowBackgroundColor))
+        .onDisappear {
+            // Revert to current month when leaving the view
+            selectedMonth = Date()
+        }
         .alert("Delete Workout", isPresented: .constant(workoutToDelete != nil)) {
             Button("Cancel", role: .cancel) {
                 workoutToDelete = nil
@@ -104,13 +115,48 @@ struct WorkoutHistoryView: View {
     @ViewBuilder
     private func monthlyHeatmapView(scrollTo: @escaping (String) -> Void) -> some View {
         let calendar = mondayFirstCalendar
-        let monthName = DateFormatter().monthSymbols[calendar.component(.month, from: Date()) - 1]
-        let year = calendar.component(.year, from: Date())
+        let monthName = DateFormatter().monthSymbols[calendar.component(.month, from: selectedMonth) - 1]
+        let year = calendar.component(.year, from: selectedMonth)
         
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(monthName) \(String(year))")
-                .font(.headline)
-                .fontWeight(.medium)
+            // Month navigation header
+            HStack {
+                Button(action: {
+                    if let previousMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonth) {
+                        selectedMonth = previousMonth
+                    }
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .frame(width: 32, height: 32)
+                        .background(Color(.controlBackgroundColor))
+                        .cornerRadius(6)
+                }
+                .buttonStyle(.plain)
+                
+                Spacer()
+                
+                Text("\(monthName) \(String(year))")
+                    .font(.headline)
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                Button(action: {
+                    if let nextMonth = calendar.date(byAdding: .month, value: 1, to: selectedMonth) {
+                        selectedMonth = nextMonth
+                    }
+                }) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .frame(width: 32, height: 32)
+                        .background(Color(.controlBackgroundColor))
+                        .cornerRadius(6)
+                }
+                .buttonStyle(.plain)
+            }
             
             LazyVGrid(columns: Array(repeating: GridItem(.fixed(40), spacing: 1), count: 7), spacing: 1) {
                 // Week day headers (Monday first)
@@ -137,7 +183,7 @@ struct WorkoutHistoryView: View {
     private func heatmapDay(date: Date, scrollTo: @escaping (String) -> Void) -> some View {
         let distance = monthlyHeatmapData[date] ?? 0.0
         let intensity = min(distance / 10.0, 1.0)
-        let isCurrentMonth = Calendar.current.isDate(date, equalTo: Date(), toGranularity: .month)
+        let isSelectedMonth = Calendar.current.isDate(date, equalTo: selectedMonth, toGranularity: .month)
         let hasData = distance > 0
         let dayId = "day-\(Calendar.current.startOfDay(for: date).timeIntervalSince1970)"
         
@@ -149,7 +195,7 @@ struct WorkoutHistoryView: View {
             RoundedRectangle(cornerRadius: 3)
                 .fill(heatmapColor(for: intensity))
                 .frame(width: 40, height: 28)
-                .opacity(isCurrentMonth ? 1.0 : 0.3)
+                .opacity(isSelectedMonth ? 1.0 : 0.3)
                 .overlay(
                     Text("\(Calendar.current.component(.day, from: date))")
                         .font(.system(size: 10, weight: .medium))
@@ -167,8 +213,8 @@ struct WorkoutHistoryView: View {
     
     private func daysInCurrentMonth() -> [Date] {
         let calendar = mondayFirstCalendar
-        let currentMonth = calendar.dateInterval(of: .month, for: Date())!
-        let startOfMonth = currentMonth.start
+        let selectedMonthInterval = calendar.dateInterval(of: .month, for: selectedMonth)!
+        let startOfMonth = selectedMonthInterval.start
         
         // Get first day of week for the month
         let firstWeekday = calendar.component(.weekday, from: startOfMonth)
