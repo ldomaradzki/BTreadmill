@@ -198,6 +198,36 @@ struct WorkoutHistoryView: View {
         updateComputedData()
     }
     
+    @MainActor
+    private func uploadToStrava(_ workout: WorkoutSession) async {
+        // Check if Strava is authenticated
+        if !StravaService.shared.isAuthenticated {
+            let success = await StravaService.shared.authenticate()
+            if !success {
+                // Show authentication failed alert
+                return
+            }
+        }
+        
+        // Upload the workout
+        if let stravaActivityId = await StravaService.shared.uploadWorkout(workout: workout) {
+            // Update the workout with Strava activity ID
+            var updatedWorkout = workout
+            updatedWorkout.markAsUploadedToStrava(activityId: stravaActivityId)
+            
+            // Save the updated workout
+            workoutManager.updateWorkout(updatedWorkout)
+            
+            // Update local cache
+            if let index = loadedWorkouts.firstIndex(where: { $0.id == workout.id }) {
+                loadedWorkouts[index] = updatedWorkout
+            }
+            
+            // Update computed data
+            updateComputedData()
+        }
+    }
+    
     @ViewBuilder
     private func monthlyHeatmapView(scrollTo: @escaping (String) -> Void) -> some View {
         let calendar = mondayFirstCalendar
@@ -456,16 +486,46 @@ struct WorkoutHistoryView: View {
                 
                 Spacer()
                 
-                // Delete button
-                Button(action: {
-                    workoutToDelete = workout
-                }) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.red)
-                        .font(.system(size: 14))
+                HStack(spacing: 8) {
+                    // Strava upload button
+                    if workout.isUploadedToStrava {
+                        Button(action: {
+                            if let url = workout.stravaActivityURL {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }) {
+                            Image(systemName: "globe")
+                                .foregroundColor(.orange)
+                                .font(.system(size: 14))
+                        }
+                        .buttonStyle(.plain)
+                        .help("View on Strava")
+                    } else {
+                        Button(action: {
+                            Task {
+                                await uploadToStrava(workout)
+                            }
+                        }) {
+                            Image(systemName: "square.and.arrow.up")
+                                .foregroundColor(.blue)
+                                .font(.system(size: 14))
+                        }
+                        .buttonStyle(.plain)
+                        .help("Upload to Strava")
+                        .disabled(StravaService.shared.isUploading)
+                    }
+                    
+                    // Delete button
+                    Button(action: {
+                        workoutToDelete = workout
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                            .font(.system(size: 14))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Delete workout")
                 }
-                .buttonStyle(.plain)
-                .help("Delete workout")
             }
             
             LazyVGrid(columns: [

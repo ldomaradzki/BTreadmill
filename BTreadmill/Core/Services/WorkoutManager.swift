@@ -262,4 +262,13 @@ class WorkoutManager: ObservableObject {
         SettingsManager.shared.deleteWorkout(id: id)
         workoutHistory.removeAll { $0.id == id }
     }
+    
+    func updateWorkout(_ workout: WorkoutSession) {
+        SettingsManager.shared.updateWorkout(workout)
+        
+        // Update local in-memory copy
+        if let index = workoutHistory.firstIndex(where: { $0.id == workout.id }) {
+            workoutHistory[index] = workout
+        }
+    }
 }

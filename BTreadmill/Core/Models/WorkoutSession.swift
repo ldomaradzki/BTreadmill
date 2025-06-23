@@ -5,7 +5,7 @@ struct WorkoutSession: Identifiable, Codable {
     private enum CodingKeys: String, CodingKey {
         case id, startTime, endTime, totalDistance, totalTime, averageSpeed, maxSpeed
         case averagePace, totalSteps, estimatedCalories, isDemo, actualStartDate, actualEndDate
-        case currentSpeed, speedHistory
+        case currentSpeed, speedHistory, stravaActivityId, stravaUploadDate
     }
     let id: UUID
     let startTime: Date
@@ -39,6 +39,10 @@ struct WorkoutSession: Identifiable, Codable {
     // Speed tracking for charts (speed values at each treadmill update)
     var speedHistory: [Double]
     
+    // Strava integration
+    var stravaActivityId: String?
+    var stravaUploadDate: Date?
+    
     init(id: UUID = UUID(), startTime: Date = Date(), isDemo: Bool = false) {
         self.id = id
         self.startTime = startTime
@@ -54,6 +58,8 @@ struct WorkoutSession: Identifiable, Codable {
         self.actualStartDate = startTime
         self.actualEndDate = nil
         self.speedHistory = []
+        self.stravaActivityId = nil
+        self.stravaUploadDate = nil
     }
     
     var isActive: Bool {
@@ -74,6 +80,15 @@ struct WorkoutSession: Identifiable, Codable {
             return Date().timeIntervalSince(actualStartDate)
         }
         return endDate.timeIntervalSince(actualStartDate)
+    }
+    
+    var isUploadedToStrava: Bool {
+        return stravaActivityId != nil
+    }
+    
+    var stravaActivityURL: URL? {
+        guard let activityId = stravaActivityId else { return nil }
+        return URL(string: "https://www.strava.com/activities/\(activityId)")
     }
     
     mutating func updateWith(runningState: RunningState) {
@@ -133,6 +148,11 @@ struct WorkoutSession: Identifiable, Codable {
         endTime = now
         actualEndDate = now
         isPaused = false
+    }
+    
+    mutating func markAsUploadedToStrava(activityId: String) {
+        self.stravaActivityId = activityId
+        self.stravaUploadDate = Date()
     }
     
     private func calculateEstimatedCalories() -> Int {

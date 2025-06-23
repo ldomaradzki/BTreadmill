@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
+    @ObservedObject private var stravaService = StravaService.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showingExportFileDialog = false
     @State private var showingImportFileDialog = false
@@ -153,6 +154,56 @@ struct SettingsView: View {
                         }
                         
                         Text("Export saves all your settings and workout history to a JSON file. Import replaces current data with imported file.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                
+                Divider()
+                
+                // Strava Integration Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Strava Integration")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Status: \(stravaService.isAuthenticated ? "Connected" : "Not connected")")
+                                    .font(.subheadline)
+                                    .foregroundColor(stravaService.isAuthenticated ? .green : .secondary)
+                                
+                                if stravaService.isAuthenticated {
+                                    Text("Upload workouts to Strava from workout history")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text("Connect to upload workouts to Strava")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            if stravaService.isAuthenticated {
+                                Button("Disconnect") {
+                                    stravaService.logout()
+                                }
+                                .buttonStyle(.bordered)
+                            } else {
+                                Button("Connect") {
+                                    Task {
+                                        await stravaService.authenticate()
+                                    }
+                                }
+                                .buttonStyle(.borderedProminent)
+                            }
+                        }
+                        
+                        Text("Upload your treadmill workouts as VirtualRun activities to your Strava account.")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .fixedSize(horizontal: false, vertical: true)

@@ -61,6 +61,19 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    func updateWorkout(_ workout: WorkoutSession) {
+        do {
+            try dataManager.saveWorkout(workout)
+            
+            // Update local history
+            if let index = workoutHistory.firstIndex(where: { $0.id == workout.id }) {
+                workoutHistory[index] = workout
+            }
+        } catch {
+            logger.error("Failed to update workout \(workout.id): \(error.localizedDescription)")
+        }
+    }
+    
     // MARK: - Import/Export (Legacy format support)
     
     func exportData(to url: URL) throws {
