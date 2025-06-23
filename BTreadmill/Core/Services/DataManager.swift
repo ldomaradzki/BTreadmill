@@ -10,12 +10,14 @@ class DataManager {
     private let configFileName = "config.json"
     private let workoutsFolderName = "workouts"
     private let plansFolderName = "plans"
+    private let fitFolderName = "fit"
     
     private let documentsDirectory: URL
     private let dataFolderURL: URL
     private let configFileURL: URL
     private let workoutsFolderURL: URL
     private let plansFolderURL: URL
+    private let fitFolderURL: URL
     
     // Legacy single file (for migration)
     private let legacyDataFileName = "btreadmill_data.json"
@@ -28,6 +30,7 @@ class DataManager {
         configFileURL = dataFolderURL.appendingPathComponent(configFileName)
         workoutsFolderURL = dataFolderURL.appendingPathComponent(workoutsFolderName)
         plansFolderURL = dataFolderURL.appendingPathComponent(plansFolderName)
+        fitFolderURL = dataFolderURL.appendingPathComponent(fitFolderName)
         legacyDataFileURL = documentsDirectory.appendingPathComponent(legacyDataFileName)
         
         
@@ -43,6 +46,7 @@ class DataManager {
             try FileManager.default.createDirectory(at: dataFolderURL, withIntermediateDirectories: true)
             try FileManager.default.createDirectory(at: workoutsFolderURL, withIntermediateDirectories: true)
             try FileManager.default.createDirectory(at: plansFolderURL, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: fitFolderURL, withIntermediateDirectories: true)
         } catch {
             logger.error("Failed to create data directories: \(error.localizedDescription)")
         }
@@ -155,6 +159,20 @@ class DataManager {
         }
     }
     
+    func saveFITFile(data: Data, for workout: WorkoutSession) -> String? {
+        // Generate the same filename pattern as JSON but with .fit extension
+        let fileName = generateWorkoutFileName(for: workout).replacingOccurrences(of: ".json", with: ".fit")
+        let fitFileURL = fitFolderURL.appendingPathComponent(fileName)
+        
+        do {
+            try data.write(to: fitFileURL)
+            return fitFileURL.path
+        } catch {
+            logger.error("Failed to save FIT file: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
     func deleteWorkout(id: UUID) throws {
         // Find the actual filename for this workout
         guard let fileName = findWorkoutFileName(for: id) else {
@@ -163,8 +181,18 @@ class DataManager {
         
         let workoutFileURL = workoutsFolderURL.appendingPathComponent(fileName)
         
+        // Create FIT filename based on JSON filename (replace .json with .fit)
+        let fitFileName = fileName.replacingOccurrences(of: ".json", with: ".fit")
+        let fitFileURL = fitFolderURL.appendingPathComponent(fitFileName)
+        
         do {
+            // Delete JSON workout file
             try FileManager.default.removeItem(at: workoutFileURL)
+            
+            // Delete FIT file if it exists (don't throw error if it doesn't exist)
+            if FileManager.default.fileExists(atPath: fitFileURL.path) {
+                try FileManager.default.removeItem(at: fitFileURL)
+            }
         } catch {
             logger.error("Failed to delete workout \(id): \(error.localizedDescription)")
             throw WorkoutDataError.fileAccessError(error.localizedDescription)

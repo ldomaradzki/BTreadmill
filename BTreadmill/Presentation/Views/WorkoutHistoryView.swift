@@ -146,7 +146,7 @@ struct WorkoutHistoryView: View {
         
         if !monthsToActuallyLoad.isEmpty {
             let newWorkouts = await Task.detached {
-                return dataManager.loadWorkoutsForMonths(monthsToActuallyLoad)
+                return await dataManager.loadWorkoutsForMonths(monthsToActuallyLoad)
             }.value
             
             // Update loaded data
@@ -487,32 +487,34 @@ struct WorkoutHistoryView: View {
                 Spacer()
                 
                 HStack(spacing: 8) {
-                    // Strava upload button
-                    if workout.isUploadedToStrava {
-                        Button(action: {
-                            if let url = workout.stravaActivityURL {
-                                NSWorkspace.shared.open(url)
+                    // Strava upload button (only show if workout has a FIT file)
+                    if workout.fitFilePath != nil {
+                        if workout.isUploadedToStrava {
+                            Button(action: {
+                                if let url = workout.stravaActivityURL {
+                                    NSWorkspace.shared.open(url)
+                                }
+                            }) {
+                                Image(systemName: "globe")
+                                    .foregroundColor(.orange)
+                                    .font(.system(size: 14))
                             }
-                        }) {
-                            Image(systemName: "globe")
-                                .foregroundColor(.orange)
-                                .font(.system(size: 14))
-                        }
-                        .buttonStyle(.plain)
-                        .help("View on Strava")
-                    } else {
-                        Button(action: {
-                            Task {
-                                await uploadToStrava(workout)
+                            .buttonStyle(.plain)
+                            .help("View on Strava")
+                        } else {
+                            Button(action: {
+                                Task {
+                                    await uploadToStrava(workout)
+                                }
+                            }) {
+                                Image(systemName: "square.and.arrow.up")
+                                    .foregroundColor(.blue)
+                                    .font(.system(size: 14))
                             }
-                        }) {
-                            Image(systemName: "square.and.arrow.up")
-                                .foregroundColor(.blue)
-                                .font(.system(size: 14))
+                            .buttonStyle(.plain)
+                            .help("Upload to Strava")
+                            .disabled(StravaService.shared.isUploading)
                         }
-                        .buttonStyle(.plain)
-                        .help("Upload to Strava")
-                        .disabled(StravaService.shared.isUploading)
                     }
                     
                     // Delete button

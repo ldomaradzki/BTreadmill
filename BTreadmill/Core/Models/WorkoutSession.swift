@@ -5,7 +5,7 @@ struct WorkoutSession: Identifiable, Codable {
     private enum CodingKeys: String, CodingKey {
         case id, startTime, endTime, totalDistance, totalTime, averageSpeed, maxSpeed
         case averagePace, totalSteps, estimatedCalories, isDemo, actualStartDate, actualEndDate
-        case currentSpeed, speedHistory, stravaActivityId, stravaUploadDate
+        case currentSpeed, speedHistory, stravaActivityId, stravaUploadDate, fitFilePath
     }
     let id: UUID
     let startTime: Date
@@ -43,6 +43,9 @@ struct WorkoutSession: Identifiable, Codable {
     var stravaActivityId: String?
     var stravaUploadDate: Date?
     
+    // FIT file integration
+    var fitFilePath: String?
+    
     init(id: UUID = UUID(), startTime: Date = Date(), isDemo: Bool = false) {
         self.id = id
         self.startTime = startTime
@@ -60,6 +63,7 @@ struct WorkoutSession: Identifiable, Codable {
         self.speedHistory = []
         self.stravaActivityId = nil
         self.stravaUploadDate = nil
+        self.fitFilePath = nil
     }
     
     var isActive: Bool {

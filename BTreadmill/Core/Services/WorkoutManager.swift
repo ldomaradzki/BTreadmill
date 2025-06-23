@@ -18,6 +18,9 @@ class WorkoutManager: ObservableObject {
     @Published var planExecutor: WorkoutPlanExecutor?
     @Published var currentExecutingPlan: WorkoutPlan?
     
+    // FIT file encoding
+    private var fitEncoder: FITWorkoutEncoder?
+    
     // Workout statistics
     private let currentWorkoutSubject = CurrentValueSubject<WorkoutSession?, Never>(nil)
     var currentWorkoutPublisher: AnyPublisher<WorkoutSession?, Never> {
@@ -84,9 +87,13 @@ class WorkoutManager: ObservableObject {
         
         // Determine if this is a demo workout based on simulator mode
         let isDemo = SettingsManager.shared.userProfile.simulatorMode
-        currentWorkout = WorkoutSession(isDemo: isDemo)
+        let workout = WorkoutSession(isDemo: isDemo)
+        currentWorkout = workout
         isWorkoutActive = true
         
+        // Initialize FIT encoder
+        fitEncoder = FITWorkoutEncoder(workoutId: workout.id, startTime: workout.startTime)
+        fitEncoder?.startWorkout()
         
         // Send start command to treadmill
         treadmillService.sendCommand(.start)
@@ -117,6 +124,9 @@ class WorkoutManager: ObservableObject {
         workout.pause()
         currentWorkout = workout
         
+        // Pause FIT encoding
+        fitEncoder?.pauseWorkout()
+        
         // Pause plan execution if active
         planExecutor?.pauseExecution()
         
@@ -133,6 +143,9 @@ class WorkoutManager: ObservableObject {
         let speedToRestore = workout.speedBeforePause
         workout.resume()
         currentWorkout = workout
+        
+        // Resume FIT encoding
+        fitEncoder?.resumeWorkout()
         
         // Resume plan execution if active
         planExecutor?.resumeExecution()
@@ -157,6 +170,15 @@ class WorkoutManager: ObservableObject {
         
         workout.end()
         isWorkoutActive = false
+        
+        // Generate FIT file
+        if let fitData = fitEncoder?.endWorkout(session: workout) {
+            let fitFilePath = DataManager.shared.saveFITFile(data: fitData, for: workout)
+            workout.fitFilePath = fitFilePath
+        }
+        
+        // Clean up FIT encoder
+        fitEncoder = nil
         
         // Stop plan execution if active
         planExecutor?.stopExecution()
@@ -202,6 +224,12 @@ class WorkoutManager: ObservableObject {
             // Track speed data for chart (only when not paused)
             if !workout.isPaused {
                 workout.speedHistory.append(runningState.speed)
+                
+                // Add FIT record data
+                fitEncoder?.addRecord(speed: runningState.speed, 
+                                    distance: runningState.distance, 
+                                    steps: runningState.steps, 
+                                    timestamp: runningState.timestamp)
             }
             
             // Update workout with current treadmill data
@@ -218,6 +246,12 @@ class WorkoutManager: ObservableObject {
             // Track final speed data if not paused
             if !workout.isPaused {
                 workout.speedHistory.append(runningState.speed)
+                
+                // Add final FIT record data
+                fitEncoder?.addRecord(speed: runningState.speed, 
+                                    distance: runningState.distance, 
+                                    steps: runningState.steps, 
+                                    timestamp: runningState.timestamp)
             }
             
             // Update workout with final state but don't auto-pause
@@ -271,4 +305,5 @@ class WorkoutManager: ObservableObject {
             workoutHistory[index] = workout
         }
     }
+    
 }
