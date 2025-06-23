@@ -192,6 +192,62 @@ class DataManager {
         return workouts.sorted { $0.actualStartDate > $1.actualStartDate }
     }
     
+    func loadWorkoutsForMonths(_ months: Set<Date>) -> [WorkoutSession] {
+        var workouts: [WorkoutSession] = []
+        
+        // Convert months to year-month strings for efficient filtering
+        let monthStrings = Set(months.map { month in
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM"
+            return formatter.string(from: month)
+        })
+        
+        do {
+            let workoutFiles = try FileManager.default.contentsOfDirectory(at: workoutsFolderURL, includingPropertiesForKeys: nil)
+            
+            for fileURL in workoutFiles where fileURL.pathExtension == "json" {
+                let fileName = fileURL.lastPathComponent
+                
+                // Extract date from filename (format: yyyy-MM-dd_HH-mm-ss.json or yyyy-MM-dd_HH-mm-ss-demo.json)
+                if let monthString = extractMonthFromFileName(fileName),
+                   monthStrings.contains(monthString) {
+                    
+                    do {
+                        let data = try Data(contentsOf: fileURL)
+                        let decoder = JSONDecoder()
+                        decoder.dateDecodingStrategy = .iso8601
+                        let workoutFile = try decoder.decode(WorkoutDataFile.self, from: data)
+                        workouts.append(workoutFile.workout)
+                    } catch {
+                        logger.error("Failed to load workout file \(fileName): \(error.localizedDescription)")
+                    }
+                }
+            }
+            
+        } catch {
+            logger.error("Failed to load workouts for months: \(error.localizedDescription)")
+        }
+        
+        return workouts.sorted { $0.actualStartDate > $1.actualStartDate }
+    }
+    
+    func loadWorkoutsForMonth(_ month: Date) -> [WorkoutSession] {
+        return loadWorkoutsForMonths([month])
+    }
+    
+    private func extractMonthFromFileName(_ fileName: String) -> String? {
+        // Extract yyyy-MM from filename format: yyyy-MM-dd_HH-mm-ss.json or yyyy-MM-dd_HH-mm-ss-demo.json
+        let components = fileName.components(separatedBy: "-")
+        guard components.count >= 3,
+              let year = components[0].components(separatedBy: "/").last,
+              year.count == 4,
+              components[1].count == 2 else {
+            return nil
+        }
+        
+        return "\(year)-\(components[1])"
+    }
+    
     func loadUserWorkoutPlans() -> [WorkoutPlan] {
         var plans: [WorkoutPlan] = []
         

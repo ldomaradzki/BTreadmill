@@ -1,52 +1,31 @@
 import SwiftUI
 
+extension Calendar {
+    func startOfMonth(for date: Date) -> Date {
+        let components = dateComponents([.year, .month], from: date)
+        return self.date(from: components) ?? date
+    }
+}
+
 struct WorkoutHistoryView: View {
     @ObservedObject var workoutManager: WorkoutManager
     @ObservedObject var settingsManager: SettingsManager
     @Environment(\.dismiss) private var dismiss
     @State private var workoutToDelete: WorkoutSession?
     @State private var selectedMonth: Date = Date()
+    @State private var isLoading: Bool = true
+    @State private var loadedWorkouts: [WorkoutSession] = []
+    @State private var loadedMonths: Set<Date> = []
+    @State private var groupedWorkouts: [(Date, [WorkoutSession])] = []
+    @State private var monthlyHeatmapData: [Date: Double] = [:]
     
-    // Group workouts by day (filtered by selected month)
-    private var groupedWorkouts: [(Date, [WorkoutSession])] {
-        let calendar = Calendar.current
-        let selectedMonthInterval = calendar.dateInterval(of: .month, for: selectedMonth)!
-        
-        let filteredWorkouts = workoutManager.workoutHistory.filter { workout in
-            selectedMonthInterval.contains(workout.actualStartDate)
-        }
-        
-        let grouped = Dictionary(grouping: filteredWorkouts) { workout in
-            calendar.startOfDay(for: workout.actualStartDate)
-        }
-        return grouped.sorted { $0.key > $1.key } // Most recent first
-    }
+    private let dataManager = DataManager.shared
     
     // Calendar with Monday as first weekday
     private var mondayFirstCalendar: Calendar {
         var calendar = Calendar.current
         calendar.firstWeekday = 2 // Monday = 2, Sunday = 1
         return calendar
-    }
-    
-    // Monthly heatmap data (for selected month)
-    private var monthlyHeatmapData: [Date: Double] {
-        let calendar = Calendar.current
-        let selectedMonthInterval = calendar.dateInterval(of: .month, for: selectedMonth)!
-        
-        let workoutsInMonth = workoutManager.workoutHistory.filter { workout in
-            selectedMonthInterval.contains(workout.actualStartDate)
-        }
-        
-        let grouped = Dictionary(grouping: workoutsInMonth) { workout in
-            calendar.startOfDay(for: workout.actualStartDate)
-        }
-        
-        return grouped.mapValues { workouts in
-            workouts.reduce(0.0) { result, workout in
-                result + workout.totalDistance
-            }
-        }
     }
     
     // Daily statistics
@@ -67,7 +46,9 @@ struct WorkoutHistoryView: View {
             Divider()
             
             // Content
-            if workoutManager.workoutHistory.isEmpty {
+            if isLoading {
+                loadingView
+            } else if loadedWorkouts.isEmpty {
                 emptyStateView
             } else {
                 historyListView
@@ -75,6 +56,14 @@ struct WorkoutHistoryView: View {
         }
         .frame(width: 400, height: 500)
         .background(Color(.windowBackgroundColor))
+        .task {
+            await loadInitialData()
+        }
+        .onChange(of: selectedMonth) { newMonth in
+            Task {
+                await loadDataForMonth(newMonth)
+            }
+        }
         .onDisappear {
             // Revert to current month when leaving the view
             selectedMonth = Date()
@@ -85,7 +74,9 @@ struct WorkoutHistoryView: View {
             }
             Button("Delete", role: .destructive) {
                 if let workout = workoutToDelete {
-                    workoutManager.deleteWorkout(id: workout.id)
+                    Task {
+                        await deleteWorkout(workout)
+                    }
                 }
                 workoutToDelete = nil
             }
@@ -112,6 +103,101 @@ struct WorkoutHistoryView: View {
         .padding()
     }
     
+    private var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.2)
+            
+            Text("Loading workout history...")
+                .font(.body)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+    }
+    
+    // MARK: - Async Loading Functions
+    
+    @MainActor
+    private func loadInitialData() async {
+        await loadDataForMonth(selectedMonth, includeAdjacentMonths: true)
+        isLoading = false
+    }
+    
+    @MainActor
+    private func loadDataForMonth(_ month: Date, includeAdjacentMonths: Bool = false) async {
+        let calendar = Calendar.current
+        let monthToLoad = calendar.startOfMonth(for: month)
+        
+        // Determine which months to load
+        var monthsToLoad: Set<Date> = [monthToLoad]
+        
+        if includeAdjacentMonths {
+            if let previousMonth = calendar.date(byAdding: .month, value: -1, to: monthToLoad) {
+                monthsToLoad.insert(previousMonth)
+            }
+            if let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthToLoad) {
+                monthsToLoad.insert(nextMonth)
+            }
+        }
+        
+        // Filter out already loaded months
+        let monthsToActuallyLoad = monthsToLoad.subtracting(loadedMonths)
+        
+        if !monthsToActuallyLoad.isEmpty {
+            let newWorkouts = await Task.detached {
+                return dataManager.loadWorkoutsForMonths(monthsToActuallyLoad)
+            }.value
+            
+            // Update loaded data
+            loadedWorkouts.append(contentsOf: newWorkouts)
+            loadedWorkouts.sort { $0.actualStartDate > $1.actualStartDate }
+            loadedMonths.formUnion(monthsToActuallyLoad)
+        }
+        
+        // Update computed data for the selected month
+        updateComputedData()
+    }
+    
+    @MainActor
+    private func updateComputedData() {
+        let calendar = Calendar.current
+        let selectedMonthInterval = calendar.dateInterval(of: .month, for: selectedMonth)!
+        
+        // Filter workouts for selected month
+        let filteredWorkouts = loadedWorkouts.filter { workout in
+            selectedMonthInterval.contains(workout.actualStartDate)
+        }
+        
+        // Update grouped workouts
+        let grouped = Dictionary(grouping: filteredWorkouts) { workout in
+            calendar.startOfDay(for: workout.actualStartDate)
+        }
+        groupedWorkouts = grouped.sorted { $0.key > $1.key }
+        
+        // Update heatmap data
+        let heatmapGrouped = Dictionary(grouping: filteredWorkouts) { workout in
+            calendar.startOfDay(for: workout.actualStartDate)
+        }
+        
+        monthlyHeatmapData = heatmapGrouped.mapValues { workouts in
+            workouts.reduce(0.0) { result, workout in
+                result + workout.totalDistance
+            }
+        }
+    }
+    
+    @MainActor
+    private func deleteWorkout(_ workout: WorkoutSession) async {
+        workoutManager.deleteWorkout(id: workout.id)
+        
+        // Remove from local cache
+        loadedWorkouts.removeAll { $0.id == workout.id }
+        
+        // Update computed data
+        updateComputedData()
+    }
+    
     @ViewBuilder
     private func monthlyHeatmapView(scrollTo: @escaping (String) -> Void) -> some View {
         let calendar = mondayFirstCalendar
@@ -134,6 +220,7 @@ struct WorkoutHistoryView: View {
                         .cornerRadius(6)
                 }
                 .buttonStyle(.plain)
+                .disabled(isLoading)
                 
                 Spacer()
                 
@@ -156,6 +243,7 @@ struct WorkoutHistoryView: View {
                         .cornerRadius(6)
                 }
                 .buttonStyle(.plain)
+                .disabled(isLoading)
             }
             
             LazyVGrid(columns: Array(repeating: GridItem(.fixed(40), spacing: 1), count: 7), spacing: 1) {
