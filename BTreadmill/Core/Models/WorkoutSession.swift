@@ -64,6 +64,11 @@ struct WorkoutSession: Identifiable, Codable {
         return totalTime - pausedDuration
     }
     
+    var cadence: Double {
+        guard activeTime > 0 else { return 0 }
+        return Double(totalSteps) / (activeTime / 60.0) // steps per minute
+    }
+    
     var actualSessionDuration: TimeInterval {
         guard let endDate = actualEndDate else {
             return Date().timeIntervalSince(actualStartDate)

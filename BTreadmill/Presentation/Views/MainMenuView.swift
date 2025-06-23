@@ -44,7 +44,7 @@ struct MainMenuView: View {
                 currentWorkoutView
             }
         }
-        .frame(width: 300)
+        .frame(width: 350)
         .fixedSize(horizontal: false, vertical: true)
         .onReceive(treadmillService.isConnectedPublisher) { connected in
             isConnected = connected
@@ -107,6 +107,13 @@ struct MainMenuView: View {
                 }
                 .buttonStyle(.plain)
                 .help("Settings")
+                
+                Button(action: { NSApplication.shared.terminate(nil) }) {
+                    Image(systemName: "xmark.circle")
+                        .font(.system(size: 16, weight: .medium))
+                }
+                .buttonStyle(.plain)
+                .help("Quit BTreadmill")
             }
             .foregroundColor(.secondary)
         }
@@ -137,26 +144,7 @@ struct MainMenuView: View {
         VStack(spacing: 12) {
             // Speed Control - Only show during workout
             if workoutManager.isWorkoutActive {
-                VStack(spacing: 12) {
-                    HStack {
-                        Text("Speed")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        // Current speed display
-                        HStack(spacing: 4) {
-                            Text("\(currentSpeed, specifier: "%.1f")")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-                            Text("km/h")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
+                VStack(spacing: 8) {
                     // Speed slider with 0.5 increments
                     Slider(value: $currentSpeed, in: 1.0...6.0, step: 0.5) { changed in
                         if !changed && isTreadmillReady && workoutManager.isWorkoutActive {
@@ -164,6 +152,43 @@ struct MainMenuView: View {
                         }
                     }
                     .disabled(!workoutManager.isWorkoutActive)
+                    
+                    // Speed labels
+                    HStack(spacing: 0) {
+                        Text("1 km/h")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .frame(width: 40, alignment: .leading)
+                        
+                        HStack(spacing: 36) {
+                            Text("2")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .frame(width: 20, alignment: .center)
+                            
+                            Text("3")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .frame(width: 20, alignment: .center)
+                            
+                            Text("4")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .frame(width: 20, alignment: .center)
+                            
+                            Text("5")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .frame(width: 20, alignment: .center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        Text("6 km/h")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .frame(width: 40, alignment: .trailing)
+                    }
+                    .offset(y: -6)
                 }
             }
             
@@ -384,16 +409,39 @@ struct MainMenuView: View {
             }
             
             if let workout = workoutManager.currentWorkout {
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 8) {
-                    workoutStatView(title: "Time", value: formatTime(workout.activeTime))
-                    workoutStatView(title: "Distance", value: formatDistance(workout.totalDistance))
-                    workoutStatView(title: "Avg Speed", value: formatSpeed(workout.averageSpeed))
-                    workoutStatView(title: "Max Speed", value: formatSpeed(workout.maxSpeed))
-                    workoutStatView(title: "Pace", value: formatPace(workout.averagePace))
-                    workoutStatView(title: "Steps", value: "\(workout.totalSteps)")
+                VStack(spacing: 8) {
+                    // First row - highlighted primary metrics
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 8) {
+                        workoutStatView(title: "Speed", value: formatSpeed(workout.currentSpeed), isHighlighted: true)
+                        workoutStatView(title: "Time", value: formatTime(workout.activeTime), isHighlighted: true)
+                        workoutStatView(title: "Distance", value: formatDistance(workout.totalDistance), isHighlighted: true)
+                    }
+                    
+                    // Second row - performance metrics
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 8) {
+                        workoutStatView(title: "Avg Speed", value: formatSpeed(workout.averageSpeed))
+                        workoutStatView(title: "Max Speed", value: formatSpeed(workout.maxSpeed))
+                        workoutStatView(title: "Calories", value: "\(workout.estimatedCalories)")
+                    }
+                    
+                    // Third row - additional metrics
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 8) {
+                        workoutStatView(title: "Pace", value: formatPace(workout.averagePace))
+                        workoutStatView(title: "Steps", value: "\(workout.totalSteps)")
+                        workoutStatView(title: "Cadence", value: formatCadence(workout.cadence))
+                    }
                 }
                 
                 // Speed Chart
@@ -417,19 +465,25 @@ struct MainMenuView: View {
     }
     
     
-    private func workoutStatView(title: String, value: String) -> some View {
+    private func workoutStatView(title: String, value: String, isHighlighted: Bool = false) -> some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.title3)
-                .fontWeight(.semibold)
+                .font(isHighlighted ? .title2 : .title3)
+                .fontWeight(isHighlighted ? .bold : .semibold)
+                .foregroundColor(isHighlighted ? .primary : .primary)
             Text(title)
                 .font(.caption2)
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(8)
-        .background(Color.gray.opacity(0.1))
+        .background(isHighlighted ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
         .cornerRadius(6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(isHighlighted ? Color.blue.opacity(0.3) : Color.clear, lineWidth: 1)
+        )
+        .opacity(title.isEmpty ? 0 : 1) // Hide empty cells
     }
     
     private func formatTime(_ timeInterval: TimeInterval) -> String {
@@ -438,7 +492,7 @@ struct MainMenuView: View {
         let seconds = Int(timeInterval) % 60
         
         if hours > 0 {
-            return "\(hours)h \(minutes)m \(seconds)s"
+            return "\(hours)h \(minutes)m"
         } else if minutes > 0 {
             return "\(minutes)m \(seconds)s"
         } else {
@@ -459,6 +513,11 @@ struct MainMenuView: View {
         let minutes = Int(pace)
         let seconds = Int((pace - Double(minutes)) * 60)
         return String(format: "%d:%02d/km", minutes, seconds)
+    }
+    
+    private func formatCadence(_ cadence: Double) -> String {
+        if cadence <= 0 { return "-- spm" }
+        return String(format: "%.0f spm", cadence)
     }
     
     private func openSettings() {
