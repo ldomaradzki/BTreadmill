@@ -427,9 +427,9 @@ struct MainMenuView: View {
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: 8) {
-                        workoutStatView(title: "Avg Speed", value: formatSpeed(workout.averageSpeed))
+                        workoutStatView(title: "Avg Speed", value: workout.isInGracePeriod ? "--.- km/h" : formatSpeed(workout.averageSpeed))
                         workoutStatView(title: "Max Speed", value: formatSpeed(workout.maxSpeed))
-                        workoutStatView(title: "Calories", value: "\(workout.estimatedCalories)")
+                        workoutStatView(title: "Calories", value: workout.isInGracePeriod ? "--" : "\(workout.estimatedCalories)")
                     }
                     
                     // Third row - additional metrics
@@ -438,7 +438,7 @@ struct MainMenuView: View {
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: 8) {
-                        workoutStatView(title: "Pace", value: formatPace(workout.averagePace))
+                        workoutStatView(title: "Pace", value: workout.isInGracePeriod ? "--:--/km" : formatPace(workout.averagePace))
                         workoutStatView(title: "Steps", value: "\(workout.totalSteps)")
                         workoutStatView(title: "Cadence", value: formatCadence(workout.cadence))
                     }

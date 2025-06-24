@@ -22,6 +22,10 @@ struct WorkoutSession: Identifiable, Codable {
     var pausedDuration: TimeInterval = 0
     var isDemo: Bool
     
+    // Grace period for calculated metrics (non-serialized)
+    private var dataPointCount: Int = 0
+    private let gracePeriodDataPoints: Int = 5
+    
     // Actual session timing (wall-clock time including pauses)
     var actualStartDate: Date
     var actualEndDate: Date?
@@ -74,8 +78,12 @@ struct WorkoutSession: Identifiable, Codable {
         return totalTime - pausedDuration
     }
     
+    var isInGracePeriod: Bool {
+        return dataPointCount < gracePeriodDataPoints
+    }
+    
     var cadence: Double {
-        guard activeTime > 0 else { return 0 }
+        guard activeTime > 0 && !isInGracePeriod else { return 0 }
         return Double(totalSteps) / (activeTime / 60.0) // steps per minute
     }
     
@@ -99,6 +107,9 @@ struct WorkoutSession: Identifiable, Codable {
         let timeDelta = runningState.timestamp.timeIntervalSince(lastUpdateTime)
         
         if !isPaused {
+            // Increment data point counter
+            dataPointCount += 1
+            
             // Apply simulation acceleration factor to time if this is a demo workout
             let adjustedTimeDelta = isDemo ? timeDelta * 60.0 : timeDelta
             totalTime += adjustedTimeDelta
@@ -115,18 +126,18 @@ struct WorkoutSession: Identifiable, Codable {
             // Update steps (accumulate with pre-pause values)
             totalSteps = stepsBeforePause + runningState.steps
             
-            // Calculate average speed (excluding paused time)
-            if activeTime > 0 {
+            // Calculate average metrics only after grace period
+            if activeTime > 0 && !isInGracePeriod {
                 averageSpeed = totalDistance / (activeTime / 3600.0)
                 
                 // Calculate average pace (minutes per kilometer)
                 if totalDistance > 0 {
                     averagePace = (activeTime / 60.0) / totalDistance
                 }
+                
+                // Estimate calories (basic formula - can be improved with user weight)
+                estimatedCalories = calculateEstimatedCalories()
             }
-            
-            // Estimate calories (basic formula - can be improved with user weight)
-            estimatedCalories = calculateEstimatedCalories()
         }
         
         lastUpdateTime = runningState.timestamp
@@ -144,6 +155,7 @@ struct WorkoutSession: Identifiable, Codable {
     mutating func resume() {
         // Values are already stored in distanceBeforePause, stepsBeforePause, caloriesBeforePause
         // The updateWith method will accumulate new treadmill values with these stored values
+        // Note: dataPointCount is preserved across pause/resume to maintain grace period state
         isPaused = false
     }
     
