@@ -80,6 +80,38 @@ struct WorkoutSession: Identifiable, Codable {
         self.startingCoordinate = nil
     }
     
+    // Custom decoder to handle missing GPS fields for backward compatibility
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Required fields
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.startTime = try container.decode(Date.self, forKey: .startTime)
+        self.endTime = try container.decodeIfPresent(Date.self, forKey: .endTime)
+        self.totalDistance = try container.decode(Double.self, forKey: .totalDistance)
+        self.totalTime = try container.decode(TimeInterval.self, forKey: .totalTime)
+        self.averageSpeed = try container.decode(Double.self, forKey: .averageSpeed)
+        self.maxSpeed = try container.decode(Double.self, forKey: .maxSpeed)
+        self.averagePace = try container.decode(TimeInterval.self, forKey: .averagePace)
+        self.totalSteps = try container.decode(Int.self, forKey: .totalSteps)
+        self.estimatedCalories = try container.decode(Int.self, forKey: .estimatedCalories)
+        self.isDemo = try container.decode(Bool.self, forKey: .isDemo)
+        self.actualStartDate = try container.decode(Date.self, forKey: .actualStartDate)
+        self.actualEndDate = try container.decodeIfPresent(Date.self, forKey: .actualEndDate)
+        
+        // Optional fields that may not exist in old workout files
+        self.currentSpeed = try container.decodeIfPresent(Double.self, forKey: .currentSpeed) ?? 0
+        self.speedHistory = try container.decodeIfPresent([Double].self, forKey: .speedHistory) ?? []
+        self.stravaActivityId = try container.decodeIfPresent(String.self, forKey: .stravaActivityId)
+        self.stravaUploadDate = try container.decodeIfPresent(Date.self, forKey: .stravaUploadDate)
+        self.fitFilePath = try container.decodeIfPresent(String.self, forKey: .fitFilePath)
+        
+        // GPS fields - new fields that may not exist in old workout files
+        self.hasGPSData = try container.decodeIfPresent(Bool.self, forKey: .hasGPSData) ?? false
+        self.trackPattern = try container.decodeIfPresent(GPSTrackPattern.self, forKey: .trackPattern)
+        self.startingCoordinate = try container.decodeIfPresent(GPSCoordinate.self, forKey: .startingCoordinate)
+    }
+    
     var isActive: Bool {
         return endTime == nil
     }
