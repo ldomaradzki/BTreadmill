@@ -235,7 +235,7 @@ struct MainMenuView: View {
                 HStack(spacing: 8) {
                     Button {
                         if workoutManager.currentWorkout?.isPaused == true {
-                            workoutManager.resumeWorkout()
+                            workoutManager.resumeWorkout(withSpeed: currentSpeed)
                         } else {
                             workoutManager.pauseWorkout()
                         }

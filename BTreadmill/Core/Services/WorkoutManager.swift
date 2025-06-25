@@ -152,13 +152,14 @@ class WorkoutManager: ObservableObject {
         treadmillService.sendCommand(.stop)
     }
     
-    func resumeWorkout() {
+    func resumeWorkout(withSpeed desiredSpeed: Double? = nil) {
         guard var workout = currentWorkout, workout.isPaused else {
             logger.warning("Attempted to resume workout that is not paused")
             return
         }
         
-        let speedToRestore = workout.speedBeforePause
+        // Use desired speed from UI slider, fallback to speedBeforePause, then default
+        let speedToRestore = desiredSpeed ?? workout.speedBeforePause
         workout.resume()
         currentWorkout = workout
         
@@ -169,7 +170,7 @@ class WorkoutManager: ObservableObject {
         planExecutor?.resumeExecution()
         
         // For plan workouts, the plan executor will handle speed control
-        // For free workouts, restore the previous speed immediately
+        // For free workouts, restore the desired speed immediately
         if currentExecutingPlan == nil && speedToRestore > 0 {
             // Start with the desired speed to avoid brief 1 km/h period
             treadmillService.sendCommand(.speed(speedToRestore))
