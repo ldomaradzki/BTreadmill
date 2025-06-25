@@ -32,11 +32,17 @@ struct WorkoutSession: Identifiable, Codable {
     var actualEndDate: Date?
     
     // Non-serialized values before pause (for accumulation after resume)
-    var distanceBeforePause: Double = 0 // kilometers
-    var stepsBeforePause: Int = 0
-    var caloriesBeforePause: Int = 0
     var speedBeforePause: Double = 0 // km/h - speed to restore when resuming
     var pauseStartTime: Date?
+    var isManuallyPaused: Bool = false // Track if user manually paused vs auto-pause
+    
+    // Incremental distance/steps tracking (HealthKit style)
+    var lastTreadmillDistance: Double = 0 // Last known treadmill cumulative distance
+    var lastTreadmillSteps: Int = 0 // Last known treadmill cumulative steps
+    
+    // Timer-based time tracking
+    var currentTimerStart: Date = Date() // When current timer segment started
+    var isTimerRunning: Bool = false // Whether timer is currently running
     
     // Current workout state (for active sessions)
     var currentSpeed: Double = 0 // km/h
@@ -117,7 +123,7 @@ struct WorkoutSession: Identifiable, Codable {
     }
     
     var activeTime: TimeInterval {
-        return totalTime - pausedDuration
+        return getCurrentTotalTime()
     }
     
     var isInGracePeriod: Bool {
@@ -125,8 +131,9 @@ struct WorkoutSession: Identifiable, Codable {
     }
     
     var cadence: Double {
-        guard activeTime > 0 && !isInGracePeriod else { return 0 }
-        return Double(totalSteps) / (activeTime / 60.0) // steps per minute
+        let currentActiveTime = getCurrentTotalTime()
+        guard currentActiveTime > 0 && !isInGracePeriod else { return 0 }
+        return Double(totalSteps) / (currentActiveTime / 60.0) // steps per minute
     }
     
     var actualSessionDuration: TimeInterval {
@@ -145,19 +152,60 @@ struct WorkoutSession: Identifiable, Codable {
         return URL(string: "https://www.strava.com/activities/\(activityId)")
     }
     
+    // MARK: - Timer Management
+    
+    mutating func startTimer() {
+        guard !isTimerRunning else { return }
+        currentTimerStart = Date()
+        isTimerRunning = true
+    }
+    
+    mutating func stopTimer() {
+        guard isTimerRunning else { return }
+        // Accumulate elapsed time to total
+        let elapsed = Date().timeIntervalSince(currentTimerStart)
+        let adjustedElapsed = isDemo ? elapsed * 60.0 : elapsed // Apply demo acceleration
+        totalTime += adjustedElapsed
+        isTimerRunning = false
+    }
+    
+    func getCurrentTotalTime() -> TimeInterval {
+        var total = totalTime
+        if isTimerRunning {
+            let currentElapsed = Date().timeIntervalSince(currentTimerStart)
+            let adjustedElapsed = isDemo ? currentElapsed * 60.0 : currentElapsed
+            total += adjustedElapsed
+        }
+        return total
+    }
+    
     mutating func updateWith(runningState: RunningState) {
-        let timeDelta = runningState.timestamp.timeIntervalSince(lastUpdateTime)
-        
         if !isPaused {
-            // Increment data point counter
+            // Increment data point counter  
             dataPointCount += 1
             
-            // Apply simulation acceleration factor to time if this is a demo workout
-            let adjustedTimeDelta = isDemo ? timeDelta * 60.0 : timeDelta
-            totalTime += adjustedTimeDelta
+            // Start timer if not running (handles resume and initial start)
+            if !isTimerRunning {
+                startTimer()
+            }
             
-            // Update distance (accumulate with pre-pause values)
-            totalDistance = distanceBeforePause + runningState.distance
+            // Calculate incremental distance change (HealthKit style)
+            let distanceChange = runningState.distance - lastTreadmillDistance
+            if distanceChange > 0 {
+                // Only add positive distance changes
+                totalDistance += distanceChange
+            }
+            // Always update baseline for next comparison (handles resets and normal progression)
+            lastTreadmillDistance = runningState.distance
+            
+            // Calculate incremental steps change (HealthKit style)
+            let stepsChange = runningState.steps - lastTreadmillSteps
+            if stepsChange > 0 {
+                // Only add positive step changes
+                totalSteps += stepsChange
+            }
+            // Always update baseline for next comparison (handles resets and normal progression)
+            lastTreadmillSteps = runningState.steps
             
             // Update speed tracking
             currentSpeed = runningState.speed
@@ -165,16 +213,20 @@ struct WorkoutSession: Identifiable, Codable {
                 maxSpeed = currentSpeed
             }
             
-            // Update steps (accumulate with pre-pause values)
-            totalSteps = stepsBeforePause + runningState.steps
-            
             // Calculate average metrics only after grace period
-            if activeTime > 0 && !isInGracePeriod {
-                averageSpeed = totalDistance / (activeTime / 3600.0)
+            let currentActiveTime = getCurrentTotalTime()
+            if currentActiveTime > 0 && !isInGracePeriod {
+                // Calculate average speed from speed history for better accuracy
+                if !speedHistory.isEmpty {
+                    averageSpeed = speedHistory.reduce(0, +) / Double(speedHistory.count)
+                } else {
+                    // Fallback to distance/time calculation if no speed history
+                    averageSpeed = totalDistance / (currentActiveTime / 3600.0)
+                }
                 
                 // Calculate average pace (minutes per kilometer)
                 if totalDistance > 0 {
-                    averagePace = (activeTime / 60.0) / totalDistance
+                    averagePace = (currentActiveTime / 60.0) / totalDistance
                 }
                 
                 // Estimate calories (basic formula - can be improved with user weight)
@@ -186,30 +238,35 @@ struct WorkoutSession: Identifiable, Codable {
     }
     
     mutating func pause() {
-        // Store current values before pausing
-        distanceBeforePause = totalDistance
-        stepsBeforePause = totalSteps
-        caloriesBeforePause = estimatedCalories
+        // Stop the timer and accumulate time
+        stopTimer()
+        
+        // Store current speed for resuming
         speedBeforePause = currentSpeed
         pauseStartTime = Date()
         isPaused = true
+        isManuallyPaused = true // Mark as manually paused
     }
     
     mutating func resume() {
-        // Add the paused duration to the total paused time
+        // Track paused duration for wall-clock time calculations
         if let pauseStart = pauseStartTime {
             pausedDuration += Date().timeIntervalSince(pauseStart)
         }
         pauseStartTime = nil
         
-        // Values are already stored in distanceBeforePause, stepsBeforePause, caloriesBeforePause
-        // The updateWith method will accumulate new treadmill values with these stored values
+        // Timer will be started automatically when next update comes in
+        // With incremental tracking, distance/steps will automatically handle treadmill resets
         // Note: dataPointCount is preserved across pause/resume to maintain grace period state
         isPaused = false
+        isManuallyPaused = false // Clear manual pause flag
     }
     
     mutating func end() {
         let now = Date()
+        
+        // Stop the timer and accumulate final time
+        stopTimer()
         
         // If we're ending while paused, add the final paused duration
         if isPaused, let pauseStart = pauseStartTime {

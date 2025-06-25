@@ -168,15 +168,17 @@ class WorkoutManager: ObservableObject {
         // Resume plan execution if active
         planExecutor?.resumeExecution()
         
-        // Start the treadmill again
-        treadmillService.sendCommand(.start)
-        
         // For plan workouts, the plan executor will handle speed control
-        // For free workouts, restore the previous speed
+        // For free workouts, restore the previous speed immediately
         if currentExecutingPlan == nil && speedToRestore > 0 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
-                self?.treadmillService.sendCommand(.speed(speedToRestore))
+            // Start with the desired speed to avoid brief 1 km/h period
+            treadmillService.sendCommand(.speed(speedToRestore))
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.treadmillService.sendCommand(.start)
             }
+        } else {
+            // Start the treadmill with default behavior
+            treadmillService.sendCommand(.start)
         }
     }
     
@@ -267,8 +269,8 @@ class WorkoutManager: ObservableObject {
             // Update workout with current treadmill data
             workout.updateWith(runningState: runningState)
             
-            // If workout was paused but treadmill is running, resume it
-            if workout.isPaused && isWorkoutActive {
+            // Only auto-resume if not manually paused
+            if workout.isPaused && isWorkoutActive && !workout.isManuallyPaused {
                 workout.resume()
             }
             
