@@ -42,4 +42,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         workoutManager?.endCurrentWorkout()
         return .terminateNow
     }
+    
+    func applicationDidBecomeActive(_ notification: Notification) {
+        // Ensure menu bar functionality remains intact
+        // This can be called after OAuth authentication to restore menu bar
+        if statusBarController == nil {
+            setupStatusBar()
+        }
+    }
 }

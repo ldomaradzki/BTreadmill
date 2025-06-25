@@ -38,7 +38,7 @@ class FITWorkoutEncoder {
         isStarted = true
     }
     
-    func addRecord(speed: Double, distance: Double, steps: Int, timestamp: Date) {
+    func addRecord(speed: Double, distance: Double, steps: Int, timestamp: Date, gpsCoordinate: GPSCoordinate? = nil) {
         guard isStarted && !isPaused else { return }
         
         do {
@@ -46,6 +46,16 @@ class FITWorkoutEncoder {
             try recordMesg.setTimestamp(DateTime(date: timestamp))
             try recordMesg.setDistance(distance * 1000) // Convert km to meters
             try recordMesg.setSpeed(speed / 3.6) // Convert km/h to m/s
+            
+            // Add GPS coordinates if provided
+            if let coordinate = gpsCoordinate {
+                try recordMesg.setPositionLat(coordinate.latitude.semicircles)
+                try recordMesg.setPositionLong(coordinate.longitude.semicircles)
+                
+                if let altitude = coordinate.altitude {
+                    try recordMesg.setAltitude(altitude)
+                }
+            }
             
             fitEncoder.write(mesg: recordMesg)
         } catch {
@@ -86,7 +96,7 @@ class FITWorkoutEncoder {
             try sessionMesg.setTotalElapsedTime(session.activeTime)
             try sessionMesg.setTotalTimerTime(session.activeTime)
             try sessionMesg.setTotalDistance(session.totalDistance * 1000) // Convert km to meters
-            try sessionMesg.setSport(.walking)
+            try sessionMesg.setSport(.running)
             try sessionMesg.setSubSport(.treadmill)
             try sessionMesg.setTotalStrides(UInt32(session.totalSteps))
             try sessionMesg.setTotalCalories(UInt16(session.estimatedCalories))

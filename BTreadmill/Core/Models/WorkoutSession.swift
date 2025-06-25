@@ -6,6 +6,7 @@ struct WorkoutSession: Identifiable, Codable {
         case id, startTime, endTime, totalDistance, totalTime, averageSpeed, maxSpeed
         case averagePace, totalSteps, estimatedCalories, isDemo, actualStartDate, actualEndDate
         case currentSpeed, speedHistory, stravaActivityId, stravaUploadDate, fitFilePath
+        case hasGPSData, trackPattern, startingCoordinate
     }
     let id: UUID
     let startTime: Date
@@ -35,6 +36,7 @@ struct WorkoutSession: Identifiable, Codable {
     var stepsBeforePause: Int = 0
     var caloriesBeforePause: Int = 0
     var speedBeforePause: Double = 0 // km/h - speed to restore when resuming
+    var pauseStartTime: Date?
     
     // Current workout state (for active sessions)
     var currentSpeed: Double = 0 // km/h
@@ -49,6 +51,11 @@ struct WorkoutSession: Identifiable, Codable {
     
     // FIT file integration
     var fitFilePath: String?
+    
+    // GPS tracking integration
+    var hasGPSData: Bool
+    var trackPattern: GPSTrackPattern?
+    var startingCoordinate: GPSCoordinate?
     
     init(id: UUID = UUID(), startTime: Date = Date(), isDemo: Bool = false) {
         self.id = id
@@ -68,6 +75,9 @@ struct WorkoutSession: Identifiable, Codable {
         self.stravaActivityId = nil
         self.stravaUploadDate = nil
         self.fitFilePath = nil
+        self.hasGPSData = false
+        self.trackPattern = nil
+        self.startingCoordinate = nil
     }
     
     var isActive: Bool {
@@ -149,10 +159,17 @@ struct WorkoutSession: Identifiable, Codable {
         stepsBeforePause = totalSteps
         caloriesBeforePause = estimatedCalories
         speedBeforePause = currentSpeed
+        pauseStartTime = Date()
         isPaused = true
     }
     
     mutating func resume() {
+        // Add the paused duration to the total paused time
+        if let pauseStart = pauseStartTime {
+            pausedDuration += Date().timeIntervalSince(pauseStart)
+        }
+        pauseStartTime = nil
+        
         // Values are already stored in distanceBeforePause, stepsBeforePause, caloriesBeforePause
         // The updateWith method will accumulate new treadmill values with these stored values
         // Note: dataPointCount is preserved across pause/resume to maintain grace period state
@@ -161,6 +178,13 @@ struct WorkoutSession: Identifiable, Codable {
     
     mutating func end() {
         let now = Date()
+        
+        // If we're ending while paused, add the final paused duration
+        if isPaused, let pauseStart = pauseStartTime {
+            pausedDuration += now.timeIntervalSince(pauseStart)
+            pauseStartTime = nil
+        }
+        
         endTime = now
         actualEndDate = now
         isPaused = false

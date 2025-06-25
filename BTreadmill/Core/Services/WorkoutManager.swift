@@ -21,6 +21,9 @@ class WorkoutManager: ObservableObject {
     // FIT file encoding
     private var fitEncoder: FITWorkoutEncoder?
     
+    // GPS track generation
+    private var gpsTrackGenerator: GPSTrackGenerator?
+    
     // Workout statistics
     private let currentWorkoutSubject = CurrentValueSubject<WorkoutSession?, Never>(nil)
     var currentWorkoutPublisher: AnyPublisher<WorkoutSession?, Never> {
@@ -87,7 +90,20 @@ class WorkoutManager: ObservableObject {
         
         // Determine if this is a demo workout based on simulator mode
         let isDemo = SettingsManager.shared.userProfile.simulatorMode
-        let workout = WorkoutSession(isDemo: isDemo)
+        var workout = WorkoutSession(isDemo: isDemo)
+        
+        // Initialize GPS tracking if enabled
+        let gpsSettings = SettingsManager.shared.userProfile.gpsTrackSettings
+        if gpsSettings.enabled {
+            workout.hasGPSData = true
+            workout.trackPattern = gpsSettings.preferredPattern
+            workout.startingCoordinate = gpsSettings.startingCoordinate
+            
+            // Initialize GPS track generator
+            gpsTrackGenerator = GPSTrackGenerator(settings: gpsSettings)
+            logger.info("GPS tracking enabled with pattern: \(gpsSettings.preferredPattern.displayName)")
+        }
+        
         currentWorkout = workout
         isWorkoutActive = true
         
@@ -126,6 +142,8 @@ class WorkoutManager: ObservableObject {
         
         // Pause FIT encoding
         fitEncoder?.pauseWorkout()
+        
+        // GPS generator maintains position during pause automatically
         
         // Pause plan execution if active
         planExecutor?.pauseExecution()
@@ -177,8 +195,9 @@ class WorkoutManager: ObservableObject {
             workout.fitFilePath = fitFilePath
         }
         
-        // Clean up FIT encoder
+        // Clean up FIT encoder and GPS generator
         fitEncoder = nil
+        gpsTrackGenerator = nil
         
         // Stop plan execution if active
         planExecutor?.stopExecution()
@@ -225,11 +244,24 @@ class WorkoutManager: ObservableObject {
             if !workout.isPaused {
                 workout.speedHistory.append(runningState.speed)
                 
+                // Generate GPS coordinate if GPS tracking is enabled
+                let gpsCoordinate: GPSCoordinate?
+                if let generator = gpsTrackGenerator {
+                    gpsCoordinate = generator.generateCoordinate(
+                        for: runningState.distance,
+                        speed: runningState.speed,
+                        timestamp: runningState.timestamp
+                    )
+                } else {
+                    gpsCoordinate = nil
+                }
+                
                 // Add FIT record data
                 fitEncoder?.addRecord(speed: runningState.speed, 
                                     distance: runningState.distance, 
                                     steps: runningState.steps, 
-                                    timestamp: runningState.timestamp)
+                                    timestamp: runningState.timestamp,
+                                    gpsCoordinate: gpsCoordinate)
             }
             
             // Update workout with current treadmill data
@@ -247,11 +279,24 @@ class WorkoutManager: ObservableObject {
             if !workout.isPaused {
                 workout.speedHistory.append(runningState.speed)
                 
+                // Generate final GPS coordinate if GPS tracking is enabled
+                let finalGpsCoordinate: GPSCoordinate?
+                if let generator = gpsTrackGenerator {
+                    finalGpsCoordinate = generator.generateCoordinate(
+                        for: runningState.distance,
+                        speed: runningState.speed,
+                        timestamp: runningState.timestamp
+                    )
+                } else {
+                    finalGpsCoordinate = nil
+                }
+                
                 // Add final FIT record data
                 fitEncoder?.addRecord(speed: runningState.speed, 
                                     distance: runningState.distance, 
                                     steps: runningState.steps, 
-                                    timestamp: runningState.timestamp)
+                                    timestamp: runningState.timestamp,
+                                    gpsCoordinate: finalGpsCoordinate)
             }
             
             // Update workout with final state but don't auto-pause

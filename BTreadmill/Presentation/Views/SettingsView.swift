@@ -63,6 +63,91 @@ struct SettingsView: View {
                 
                 Divider()
                 
+                // GPS Tracking Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("GPS Tracking")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Toggle("Generate GPS tracks", isOn: $settingsManager.userProfile.gpsTrackSettings.enabled)
+                                .toggleStyle(.switch)
+                        }
+                        
+                        Text("Create synthetic GPS tracks for indoor workouts")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        if settingsManager.userProfile.gpsTrackSettings.enabled {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text("Pattern:")
+                                        .frame(minWidth: 120, alignment: .leading)
+                                    Spacer()
+                                    Picker("Pattern", selection: $settingsManager.userProfile.gpsTrackSettings.preferredPattern) {
+                                        ForEach(GPSTrackPattern.allCases, id: \.self) { pattern in
+                                            Text(pattern.displayName).tag(pattern)
+                                        }
+                                    }
+                                    .pickerStyle(.menu)
+                                    .frame(width: 120, alignment: .trailing)
+                                }
+                                
+                                HStack {
+                                    Text("Latitude:")
+                                        .frame(minWidth: 120, alignment: .leading)
+                                    Spacer()
+                                    TextField("Latitude", value: Binding(
+                                        get: { settingsManager.userProfile.gpsTrackSettings.startingCoordinate.latitude },
+                                        set: { newValue in
+                                            settingsManager.userProfile.gpsTrackSettings.startingCoordinate = GPSCoordinate(
+                                                latitude: newValue,
+                                                longitude: settingsManager.userProfile.gpsTrackSettings.startingCoordinate.longitude
+                                            )
+                                        }
+                                    ), format: .number.precision(.fractionLength(6)))
+                                        .textFieldStyle(.roundedBorder)
+                                        .frame(width: 120)
+                                }
+                                
+                                HStack {
+                                    Text("Longitude:")
+                                        .frame(minWidth: 120, alignment: .leading)
+                                    Spacer()
+                                    TextField("Longitude", value: Binding(
+                                        get: { settingsManager.userProfile.gpsTrackSettings.startingCoordinate.longitude },
+                                        set: { newValue in
+                                            settingsManager.userProfile.gpsTrackSettings.startingCoordinate = GPSCoordinate(
+                                                latitude: settingsManager.userProfile.gpsTrackSettings.startingCoordinate.latitude,
+                                                longitude: newValue
+                                            )
+                                        }
+                                    ), format: .number.precision(.fractionLength(6)))
+                                        .textFieldStyle(.roundedBorder)
+                                        .frame(width: 120)
+                                }
+                                
+                                HStack {
+                                    Text("Track scale:")
+                                        .frame(minWidth: 120, alignment: .leading)
+                                    Spacer()
+                                    VStack(alignment: .trailing, spacing: 2) {
+                                        Slider(value: $settingsManager.userProfile.gpsTrackSettings.trackScale, in: 0.5...2.0, step: 0.1)
+                                            .frame(width: 120)
+                                        Text(String(format: "%.1fx", settingsManager.userProfile.gpsTrackSettings.trackScale))
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                Divider()
+                
                 // Personal Information Section
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Personal Information")
@@ -179,6 +264,12 @@ struct SettingsView: View {
                                     Text("Upload workouts to Strava from workout history")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
+                                    
+                                    if !stravaService.authenticationDetails.isEmpty {
+                                        Text(stravaService.authenticationDetails)
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
                                 } else {
                                     Text("Connect to upload workouts to Strava")
                                         .font(.caption)
@@ -193,13 +284,15 @@ struct SettingsView: View {
                                     stravaService.logout()
                                 }
                                 .buttonStyle(.bordered)
+                                .disabled(stravaService.isAuthenticating)
                             } else {
-                                Button("Connect") {
+                                Button(stravaService.isAuthenticating ? "Connecting..." : "Connect") {
                                     Task {
                                         await stravaService.authenticate()
                                     }
                                 }
                                 .buttonStyle(.borderedProminent)
+                                .disabled(stravaService.isAuthenticating)
                             }
                         }
                         
