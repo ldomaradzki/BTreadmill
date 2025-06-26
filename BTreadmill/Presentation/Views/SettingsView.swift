@@ -254,6 +254,29 @@ struct SettingsView: View {
                         .padding(.bottom, 4)
                     
                     VStack(alignment: .leading, spacing: 8) {
+                        // Client Secret Configuration
+                        HStack {
+                            Text("Client Secret:")
+                                .frame(minWidth: 120, alignment: .leading)
+                            Spacer()
+                            SecureField("Client Secret", text: Binding(
+                                get: { settingsManager.userProfile.stravaClientSecret ?? "" },
+                                set: { newValue in
+                                    let secret = newValue.isEmpty ? nil : newValue
+                                    stravaService.updateClientSecret(secret)
+                                }
+                            ))
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 200)
+                        }
+                        
+                        if !stravaService.hasValidClientSecret {
+                            Text("⚠️ Client secret required for Strava integration")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Status: \(stravaService.isAuthenticated ? "Connected" : "Not connected")")
@@ -292,7 +315,7 @@ struct SettingsView: View {
                                     }
                                 }
                                 .buttonStyle(.borderedProminent)
-                                .disabled(stravaService.isAuthenticating)
+                                .disabled(stravaService.isAuthenticating || !stravaService.hasValidClientSecret)
                             }
                         }
                         

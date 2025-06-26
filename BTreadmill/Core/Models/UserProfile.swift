@@ -6,6 +6,7 @@ struct UserProfile: Codable {
     var defaultSpeed: Double // km/h
     var simulatorMode: Bool
     var gpsTrackSettings: GPSTrackSettings
+    var stravaClientSecret: String?
     
     init() {
         self.weight = Measurement(value: 70, unit: .kilograms)
@@ -13,6 +14,7 @@ struct UserProfile: Codable {
         self.defaultSpeed = 3.0
         self.simulatorMode = false
         self.gpsTrackSettings = GPSTrackSettings()
+        self.stravaClientSecret = nil
     }
     
     // Custom decoder to handle missing fields for backward compatibility
@@ -27,6 +29,9 @@ struct UserProfile: Codable {
         
         // GPS settings - new field that may not exist in old configs
         self.gpsTrackSettings = try container.decodeIfPresent(GPSTrackSettings.self, forKey: .gpsTrackSettings) ?? GPSTrackSettings()
+        
+        // Strava client secret - new field that may not exist in old configs
+        self.stravaClientSecret = try container.decodeIfPresent(String.self, forKey: .stravaClientSecret)
     }
     
     private enum CodingKeys: String, CodingKey {
@@ -35,6 +40,7 @@ struct UserProfile: Codable {
         case defaultSpeed
         case simulatorMode
         case gpsTrackSettings
+        case stravaClientSecret
     }
 }
 
