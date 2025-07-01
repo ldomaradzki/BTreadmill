@@ -254,9 +254,18 @@ struct WorkoutHistoryView: View {
                 
                 Spacer()
                 
-                Text("\(monthName) \(String(year))")
-                    .font(.headline)
-                    .fontWeight(.medium)
+                VStack(spacing: 2) {
+                    Text("\(monthName) \(String(year))")
+                        .font(.headline)
+                        .fontWeight(.medium)
+                    
+                    let monthlyTotal = monthlyHeatmapData.values.reduce(0.0, +)
+                    if monthlyTotal > 0 {
+                        Text("\(String(format: "%.1f", monthlyTotal)) km total")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 
                 Spacer()
                 
